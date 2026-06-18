@@ -7,7 +7,7 @@ cd /home/ailson/robo.etegaranhuns.com.br
 echo "=== 1. Atualizar codigo ==="
 git pull origin main || true
 
-echo "=== 2. Criar .htaccess (OBRIGATORIO) ==="
+echo "=== 2. Criar .htaccess (formato CloudLinux igual app aulas) ==="
 cp -f htaccess.example .htaccess
 chmod 644 .htaccess
 ls -la .htaccess

@@ -1,74 +1,54 @@
 # CORREÇÃO: "No such application (or application not configured)"
 
-Esse erro **NÃO é do código Flask**. O servidor **não registrou** a aplicação Python.
+## .htaccess — copie EXATAMENTE este formato (igual sua app aulas)
 
-## Faça EXATAMENTE nesta ordem
+```apache
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/ailson/robo.etegaranhuns.com.br"
+PassengerBaseURI "/"
+PassengerPython "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/python"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+```
 
-### 1. Terminal do cPanel
+No terminal:
 
 ```bash
 cd /home/ailson/robo.etegaranhuns.com.br
-git pull origin main
-bash fix_cpanel.sh
+cp htaccess.example .htaccess
 ```
 
-### 2. cPanel → Setup Python App (ou "Aplicação Python")
+Ou deixe o cPanel gerar ao criar o Python App.
 
-**APAGUE** a aplicação `robo.etegaranhuns.com.br` se já existir.
+---
 
-**CRIE uma nova:**
+## pyserver / Setup Python App
 
 | Campo | Valor |
 |-------|--------|
-| Python version | 3.11 |
 | Application root | `/home/ailson/robo.etegaranhuns.com.br` |
-| Application URL | `robo.etegaranhuns.com.br` |
-| Application startup file | `passenger_wsgi.py` |
-| Application Entry point | `application` |
+| Startup file | `passenger_wsgi.py` |
+| Entry point | `application` |
 
-Clique em **Create** e depois **Restart**.
-
-> Ao criar, o cPanel gera o `.htaccess` correto. **Não apague** depois.
-
-### 3. pyserver / painel
-
-- Arquivo: `passenger_wsgi.py`
-- Application: `application`
-
-### 4. Teste
-
-https://robo.etegaranhuns.com.br/login
-
----
-
-## Se ainda falhar
-
-Veja o erro real:
-
-```bash
-cat /home/ailson/robo.etegaranhuns.com.br/stderr.log
-```
-
-Teste o Python manualmente:
-
-```bash
-source /home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/activate
-cd /home/ailson/robo.etegaranhuns.com.br
-python -c "from app import app; print(app)"
-```
-
-Se der erro aqui, rode:
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## passenger_wsgi.py (não mude)
+## passenger_wsgi.py
 
 ```python
+import sys
+import os
+
+sys.path.insert(0, os.path.dirname(__file__))
+
 from app import app as application
 ```
 
-O `app` é criado em `app/__init__.py`.
+## Dependências
+
+```bash
+source /home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/activate
+pip install -r requirements.txt
+```
+
+Restart no painel.
+
+## Teste
+
+https://robo.etegaranhuns.com.br/login

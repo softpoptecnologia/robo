@@ -1,16 +1,5 @@
-# COPIE este arquivo para .htaccess OU deixe o cPanel gerar ao criar o Python App
-# O erro "No such application" = este arquivo ausente ou Python App não criado no painel
-
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
 PassengerAppRoot "/home/ailson/robo.etegaranhuns.com.br"
 PassengerBaseURI "/"
-PassengerPython "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/python3.11-bin"
-PassengerAppType wsgi
-PassengerStartupFile passenger_wsgi.py
+PassengerPython "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/python"
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
-
-PassengerEnabled On
-Options -Indexes +FollowSymLinks
-
-SetEnv SECRET_KEY "troque-por-uma-chave-secreta-longa"
-SetEnv FLASK_DEBUG "1"
