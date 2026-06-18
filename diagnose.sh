@@ -6,17 +6,14 @@ echo ""
 
 APP="/home/ailson/robo.etegaranhuns.com.br"
 AULAS="/home/ailson/aulas.etegaranhuns.com.br"
-VENV="/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.13/bin/python"
+VENV311="/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/python"
+VENV313="/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.13/bin/python"
 
-cd "$APP" 2>/dev/null || { echo "ERRO: pasta $APP nao existe"; exit 1; }
-
-echo "1. Pasta atual:"
-pwd
-ls -la
+echo "2. Python virtualenv 3.11 (USE ESTE):"
+ls -la "$VENV311" 2>&1 || echo "ERRO: 3.11 nao existe - recrie app no painel com Python 3.11"
 echo ""
-
-echo "2. Python virtualenv:"
-ls -la "$VENV" 2>&1 || echo "ERRO: python nao encontrado em $VENV"
+echo "2b. Python virtualenv 3.13 (NAO USAR - lswsgi quebrado):"
+ls -la "$VENV313" 2>&1 || echo "nao existe"
 echo ""
 
 echo "3. .htaccess ROBO:"
@@ -35,7 +32,8 @@ echo "6. Arquivos WSGI:"
 ls -la *wsgi*.py application.py 2>/dev/null
 echo ""
 
-echo "7. Teste Flask CLI:"
+echo "7. Teste Flask CLI (3.11):"
+source /home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/activate 2>/dev/null || \
 source /home/ailson/virtualenv/robo.etegaranhuns.com.br/3.13/bin/activate
 python check_server.py 2>&1
 echo ""
@@ -50,8 +48,9 @@ print('minimal_wsgi:', s)
 "
 echo ""
 
-echo "9. stderr.log:"
-tail -20 stderr.log 2>/dev/null || echo "vazio"
+echo "9. stderr.log (procure lswsgi):"
+tail -5 stderr.log 2>/dev/null || echo "vazio"
+echo "   Se aparecer python313/lswsgi: RECRIE app com Python 3.11"
 echo ""
 
 echo "10. Subdominio — confira no cPanel se document root e:"
