@@ -1,71 +1,41 @@
 # Deploy — robo.etegaranhuns.com.br
 
-## Configuração no pyserver (cPanel)
+Igual a app **aulas** que já funciona no mesmo servidor.
 
-No painel **Python App / pyserver**, use apenas:
+## Painel Python App
 
 | Campo | Valor |
 |-------|--------|
-| **Arquivo de entrada** | `passenger_wsgi.py` |
-| **Application / callable** | `application` |
+| Python | **3.11** |
+| Root | `/home/ailson/robo.etegaranhuns.com.br` |
+| Startup file | `passenger_wsgi.py` |
+| Entry point | `application` |
 
-Só isso. O arquivo `passenger_wsgi.py` tem 6 linhas:
+## No servidor (SSH)
+
+```bash
+cd /home/ailson/robo.etegaranhuns.com.br
+bash deploy.sh
+```
+
+Restart no painel → https://robo.etegaranhuns.com.br/ping
+
+## .htaccess (gerado pelo deploy.sh, igual aulas)
+
+```apache
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/ailson/robo.etegaranhuns.com.br"
+PassengerBaseURI "/"
+PassengerPython "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/python"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+```
+
+**Não adicione** `PassengerStartupFile`, `SetEnv`, `PassengerEnabled` — a aulas não tem.
+
+## passenger_wsgi.py
 
 ```python
-from app import create_app
-application = create_app()
+import os, sys
+sys.path.insert(0, os.path.dirname(__file__))
+from app import app as application
 ```
-
-Alternativa: arquivo `run.py`, callable `application`.
-
-Depois clique em **Restart**.
-
----
-
-## Se mostrar "Index of /" (lista de arquivos)
-
-Falta o `.htaccess`. No terminal:
-
-```bash
-cd /home/ailson/robo.etegaranhuns.com.br
-cp htaccess.example .htaccess
-```
-
-Ou rode: `bash setup_server.sh`
-
-Marque **mostrar arquivos ocultos** no Gerenciador de Arquivos.
-
----
-
-## Instalar dependências (uma vez)
-
-```bash
-cd /home/ailson/robo.etegaranhuns.com.br
-source /home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/activate
-pip install -r requirements.txt
-python seed.py --force
-```
-
----
-
-## Atualizar código
-
-```bash
-cd /home/ailson/robo.etegaranhuns.com.br
-git pull origin main
-```
-
-Se der erro no `.htaccess`:
-
-```bash
-git checkout -- .htaccess
-git pull origin main
-```
-
-Restart no painel.
-
----
-
-## Teste
-
-https://robo.etegaranhuns.com.br/login
