@@ -24,5 +24,5 @@ python check_server.py
 
 touch tmp/restart.txt 2>/dev/null || mkdir -p tmp && touch tmp/restart.txt
 echo ""
-echo "PRONTO. No painel: RECRIE o app com Python 3.11 (nao 3.13)"
-echo "Startup: passenger_wsgi.py | Entry: application"
+echo "PRONTO. Rode: bash fix_from_aulas.sh"
+echo "Isso copia config da app AULAS que funciona."

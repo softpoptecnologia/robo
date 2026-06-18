@@ -1,56 +1,53 @@
-# ERRO 503 RESOLVIDO
+# ERRO 503 — LiteSpeed lswsgi
 
-## Causa real (stderr.log)
+## Erro real (stderr.log)
 
 ```
 /opt/alt/python313/bin/lswsgi: No such file or directory
 ```
 
-O servidor **LiteSpeed** nao tem WSGI para **Python 3.13** nesta hospedagem.
-A app `aulas` funciona porque usa **Python 3.11**.
+Python **3.13 nao funciona** neste servidor. Use **3.11** (igual aulas).
 
-## Solucao (5 minutos)
-
-### 1. No cPanel → Setup Python App
-
-1. **APAGUE** a aplicacao `robo.etegaranhuns.com.br` (Python 3.13)
-2. **CRIE NOVA** com **Python 3.11** (igual aulas)
-3. Application root: `/home/ailson/robo.etegaranhuns.com.br`
-4. Startup file: `passenger_wsgi.py`
-5. Entry point: `application`
-
-### 2. No terminal
+Se ainda da 503 com 3.11, rode:
 
 ```bash
 cd /home/ailson/robo.etegaranhuns.com.br
 git pull origin main
-bash server_update.sh
+bash fix_from_aulas.sh
 ```
 
-### 3. Restart no painel
+Isso copia o `.htaccess` e o `passenger_wsgi` da app **aulas** que funciona.
 
-Teste: https://robo.etegaranhuns.com.br/login
+## No painel Python App
 
----
+1. **APAGUE** o app robo
+2. **CRIE** com **Python 3.11**
+3. Root: `/home/ailson/robo.etegaranhuns.com.br`
+4. Teste startup file nesta ordem:
+   - `passenger_wsgi.py` + entry `application`
+   - Se falhar: `passenger_wsgi` (sem .py) + entry `application`
+5. **RESTART**
 
-## .htaccess correto (Python 3.11)
+## Verificar lswsgi
 
-```apache
-# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
-PassengerAppRoot "/home/ailson/robo.etegaranhuns.com.br"
-PassengerBaseURI "/"
-PassengerPython "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/python"
-# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+```bash
+ls -la /opt/alt/python311/bin/lswsgi
 ```
 
----
+Se nao existir, abra ticket na hospedagem.
 
 ## passenger_wsgi.py
 
 ```python
-import sys, os
+import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
 from app import app as application
 ```
 
-Nao use Python 3.13 neste servidor ate a hospedagem instalar o lswsgi.
+## Mande se falhar
+
+```bash
+tail -5 stderr.log
+cat .htaccess
+ls -la /opt/alt/python311/bin/lswsgi
+```
