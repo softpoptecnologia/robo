@@ -1,9 +1,15 @@
 #!/opt/alt/python311/bin/python
 # -*- coding: utf-8 -*-
-# Loader gerado para CloudLinux/LiteSpeed — NAO APAGAR
+# Loader CloudLinux — so use se startup file for "passenger_wsgi" (sem .py)
+import importlib.util
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(__file__))
+BASE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE)
 
-from passenger_wsgi import application
+_path = os.path.join(BASE, "passenger_wsgi.py")
+_spec = importlib.util.spec_from_file_location("passenger_wsgi_py", _path)
+_mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
+application = _mod.application

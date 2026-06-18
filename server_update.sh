@@ -1,28 +1,24 @@
 #!/bin/bash
-# bash server_update.sh
+# Atualiza codigo — NAO mexe no .htaccess (cPanel gerencia)
 set -e
 cd /home/ailson/robo.etegaranhuns.com.br
 
 git fetch origin main
 git reset --hard origin/main
 
-# IMPORTANTE: usar Python 3.11 (3.13 nao tem lswsgi neste servidor)
-cat > .htaccess << 'EOF'
-# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
-PassengerAppRoot "/home/ailson/robo.etegaranhuns.com.br"
-PassengerBaseURI "/"
-PassengerPython "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/python"
-# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
-EOF
-chmod 644 .htaccess
-mkdir -p public && cp .htaccess public/.htaccess
+VENV="/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11"
+if [ ! -x "$VENV/bin/python" ]; then
+    echo "ERRO: virtualenv 3.11 nao existe. Crie o app Python 3.11 no painel."
+    exit 1
+fi
 
-echo "=== Instalar deps no Python 3.11 ==="
-source /home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/activate
+source "$VENV/bin/activate"
 pip install -r requirements.txt -q
 python check_server.py
 
-touch tmp/restart.txt 2>/dev/null || mkdir -p tmp && touch tmp/restart.txt
+mkdir -p tmp uploads
+touch tmp/restart.txt 2>/dev/null || true
+
 echo ""
-echo "PRONTO. Rode: bash fix_from_aulas.sh"
-echo "Isso copia config da app AULAS que funciona."
+echo "Codigo atualizado. Restart no painel Python App."
+echo "Se der 503: bash nuclear_fix.sh"

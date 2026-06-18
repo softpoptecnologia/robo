@@ -14,13 +14,17 @@ ls -la /opt/alt/python311/bin/lswsgi 2>&1 || echo "ERRO: lswsgi 3.11 nao existe!
 ls -la /opt/alt/python313/bin/lswsgi 2>&1 || echo "lswsgi 3.13 nao existe (esperado)"
 echo ""
 
-# 2. Copiar .htaccess da aulas
-echo "--- Copiando .htaccess da aulas ---"
-cp "$AULAS/.htaccess" "$ROBO/.htaccess"
-sed -i 's/aulas\.etegaranhuns/robo.etegaranhuns/g' "$ROBO/.htaccess"
-sed -i 's/aulas/robo/g' "$ROBO/.htaccess"
+# 2. .htaccess — so copiar se NAO existir (cPanel deve gerar)
+if [ ! -f "$ROBO/.htaccess" ]; then
+    echo "--- Copiando .htaccess da aulas (so porque nao existe) ---"
+    cp "$AULAS/.htaccess" "$ROBO/.htaccess"
+    sed -i 's/aulas\.etegaranhuns/robo.etegaranhuns/g' "$ROBO/.htaccess"
+    sed -i 's/aulas/robo/g' "$ROBO/.htaccess"
+else
+    echo "--- .htaccess ja existe (gerado pelo cPanel) — NAO sobrescrevendo ---"
+fi
 echo "ROBO .htaccess:"
-cat "$ROBO/.htaccess"
+cat "$ROBO/.htaccess" 2>/dev/null || echo "(ausente)"
 echo ""
 
 # 3. Copiar passenger_wsgi stub (sem .py)
@@ -38,6 +42,8 @@ echo ""
 
 # 4. Remover public/.htaccess duplicado (pode conflitar)
 rm -f "$ROBO/public/.htaccess" 2>/dev/null && echo "Removido public/.htaccess duplicado"
+
+# NAO copiar .htaccess para public/ — causa conflito no LiteSpeed
 
 # 5. Instalar deps no venv 3.11
 echo "--- Instalando deps Python 3.11 ---"
