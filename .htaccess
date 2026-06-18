@@ -1,0 +1,15 @@
+# Configuração Passenger / Python (cPanel / CloudLinux)
+# O painel da hospedagem precisa deste arquivo para definir variáveis de ambiente.
+# Se o painel regenerar este arquivo, mantenha as linhas SetEnv abaixo.
+
+SetEnv SECRET_KEY "troque-por-uma-chave-secreta-longa"
+SetEnv FLASK_ENV "production"
+
+# O bloco Passenger abaixo é um modelo — o cPanel pode substituir ao criar o app Python.
+# Ajuste os caminhos conforme o painel da sua hospedagem.
+
+PassengerEnabled On
+PassengerAppRoot "/home/ailson/robo.etegaranhuns.com.br"
+PassengerBaseURI "/"
+PassengerAppType wsgi
+PassengerStartupFile passenger_wsgi.py
