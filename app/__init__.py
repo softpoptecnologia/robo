@@ -51,7 +51,56 @@ def create_app(config_class=Config):
         _migrate_db()
         _seed_admin()
 
+    if app.config.get("DEBUG"):
+        _setup_debug(app)
+
     return app
+
+
+def _setup_debug(app):
+    """Log detalhado e rota de diagnóstico (somente com FLASK_DEBUG=1)."""
+    import logging
+    import sys
+    import traceback
+
+    log_file = app.config.get("LOG_FILE")
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s %(levelname)s: %(message)s",
+        handlers=[
+            logging.FileHandler(log_file, encoding="utf-8"),
+            logging.StreamHandler(sys.stderr),
+        ],
+    )
+    app.logger.setLevel(logging.DEBUG)
+    app.config["PROPAGATE_EXCEPTIONS"] = True
+    app.config["TRAP_HTTP_EXCEPTIONS"] = True
+
+    @app.errorhandler(Exception)
+    def show_exception(error):
+        from flask import Response
+        tb = traceback.format_exc()
+        app.logger.error(tb)
+        return Response(
+            f"<h1>Debug — Erro</h1><pre>{tb}</pre>",
+            status=500,
+            mimetype="text/html",
+        )
+
+    @app.route("/debug-status")
+    def debug_status():
+        import sys
+        from flask import jsonify
+
+        return jsonify({
+            "status": "ok",
+            "debug": True,
+            "python": sys.version,
+            "app_root": os.path.dirname(os.path.abspath(__file__)),
+            "db": app.config["SQLALCHEMY_DATABASE_URI"],
+            "upload_folder": app.config["UPLOAD_FOLDER"],
+            "log_file": app.config.get("LOG_FILE"),
+        })
 
 
 def _migrate_db():

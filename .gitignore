@@ -5,3 +5,4 @@ venv/
 *.db
 uploads/
 .DS_Store
+error.log
