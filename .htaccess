@@ -1,4 +1,5 @@
-# Mesmo conteúdo de .htaccess — backup caso o cPanel sobrescreva o original
+# LiteSpeed / cPanel / Passenger — OBRIGATÓRIO para rodar o Flask
+# Sem este arquivo o servidor mostra "Index of /" (lista de pastas)
 
 Options -Indexes +FollowSymLinks
 
@@ -13,3 +14,7 @@ PassengerAppType wsgi
 PassengerStartupFile passenger_wsgi.py
 PassengerPython "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/python3"
 PassengerFriendlyErrorPages on
+
+# Se a linha PassengerPython acima falhar, tente no cPanel o caminho exato
+# mostrado em Setup Python App, por exemplo:
+# PassengerPython "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/python3.11"

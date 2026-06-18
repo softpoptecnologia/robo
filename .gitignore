@@ -6,4 +6,4 @@ venv/
 uploads/
 .DS_Store
 error.log
-.htaccess
+stderr.log

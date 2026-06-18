@@ -1,5 +1,32 @@
 # Deploy — robo.etegaranhuns.com.br
 
+## Site mostra "Index of /" (lista de arquivos)
+
+**Causa:** falta o arquivo `.htaccess` na pasta do site.
+
+Na listagem você vê `htaccess.example` mas **não** `.htaccess` — o LiteSpeed não sabe rodar o Python.
+
+### Correção imediata (Terminal cPanel)
+
+```bash
+cd /home/ailson/robo.etegaranhuns.com.br
+git pull origin main
+bash setup_server.sh
+```
+
+Ou manualmente:
+
+```bash
+cp htaccess.example .htaccess
+chmod 644 .htaccess
+```
+
+No **Gerenciador de Arquivos** do cPanel: marque **Mostrar arquivos ocultos** e confirme que `.htaccess` existe.
+
+Depois: **Restart** na aplicação Python.
+
+---
+
 ## Erro: `.htaccess` não encontrado
 
 O painel tenta gravar variáveis em:
