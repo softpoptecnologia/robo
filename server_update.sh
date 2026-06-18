@@ -1,47 +1,35 @@
 #!/bin/bash
-# Atualiza o servidor ignorando alterações locais
 # bash server_update.sh
-
 set -e
 cd /home/ailson/robo.etegaranhuns.com.br
 
-echo "=== Descartar alterações locais e atualizar ==="
 git fetch origin main
 git reset --hard origin/main
 
-echo "=== Criar .htaccess ==="
+# .htaccess na raiz
 cat > .htaccess << 'EOF'
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
 PassengerAppRoot "/home/ailson/robo.etegaranhuns.com.br"
 PassengerBaseURI "/"
 PassengerPython "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.13/bin/python"
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
-
-SetEnv FLASK_DEBUG "1"
-SetEnv DEBUG "1"
-PassengerFriendlyErrorPages on
 EOF
 chmod 644 .htaccess
 
-echo "=== Dependências ==="
+# .htaccess em public/ (se document root for public/)
+mkdir -p public
+cp .htaccess public/.htaccess 2>/dev/null || true
+
 source /home/ailson/virtualenv/robo.etegaranhuns.com.br/3.13/bin/activate
 pip install -r requirements.txt -q
-
-echo "=== Teste ==="
-python check_server.py
-
-echo "=== Restart Passenger ==="
-mkdir -p tmp uploads
-touch tmp/restart.txt
-chmod 755 debug_wsgi.py passenger_wsgi.py application.py 2>/dev/null || true
+touch tmp/restart.txt 2>/dev/null || mkdir -p tmp && touch tmp/restart.txt
 
 echo ""
-echo "PRONTO. Arquivos atualizados."
+echo "=== TESTE 1: minimal_wsgi.py no painel ==="
+echo "Startup: minimal_wsgi.py | Entry: application | RESTART"
+echo "Deve mostrar: PYTHON FUNCIONA - Passenger OK"
 echo ""
-echo "NO PAINEL PYTHON APP configure:"
-echo "  Startup file: debug_wsgi.py"
-echo "  Entry point:  application"
-echo "  RESTART"
-echo ""
-echo "Abra: https://robo.etegaranhuns.com.br"
-echo "Vai mostrar o diagnostico completo na tela."
+echo "=== Se ainda 503, rode: bash diagnose.sh ==="
+echo "=== E copie .htaccess da app aulas: ==="
+echo "cp /home/ailson/aulas.etegaranhuns.com.br/.htaccess .htaccess"
+echo "sed -i 's/aulas/robo/g' .htaccess"
