@@ -3,3 +3,7 @@ PassengerAppRoot "/home/ailson/robo.etegaranhuns.com.br"
 PassengerBaseURI "/"
 PassengerPython "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.13/bin/python"
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+
+SetEnv FLASK_DEBUG "1"
+SetEnv DEBUG "1"
+PassengerFriendlyErrorPages on
