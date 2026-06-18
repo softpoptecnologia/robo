@@ -1,0 +1,2 @@
+*.py text eol=lf
+passenger_wsgi.py text eol=lf

@@ -1,9 +1,6 @@
-"""Ponto de entrada da aplicação."""
+"""Ponto de entrada local (desenvolvimento)."""
 
-from app import create_app
-
-app = create_app()
-application = app  # nome exigido pelo pyserver / Passenger
+from app import app
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
