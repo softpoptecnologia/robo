@@ -7,3 +7,5 @@ uploads/
 .DS_Store
 error.log
 stderr.log
+# .htaccess é gerado pelo cPanel — use htaccess.example como modelo
+.htaccess
