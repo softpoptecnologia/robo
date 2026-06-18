@@ -9,6 +9,12 @@ AULAS="/home/ailson/aulas.etegaranhuns.com.br"
 VENV311="/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/python"
 VENV313="/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.13/bin/python"
 
+cd "$APP" || exit 1
+
+echo "1. Pasta: $APP"
+pwd
+echo ""
+
 echo "2. Python virtualenv 3.11 (USE ESTE):"
 ls -la "$VENV311" 2>&1 || echo "ERRO: 3.11 nao existe - recrie app no painel com Python 3.11"
 echo ""
@@ -58,12 +64,5 @@ echo "    $APP"
 echo "    OU $APP/public"
 echo ""
 echo "========== PROXIMO PASSO =========="
-echo "No painel Python App:"
-echo "  Startup file: minimal_wsgi.py"
-echo "  Entry point:  application"
-echo "  RESTART"
-echo ""
-echo "Se minimal_wsgi ainda der 503, o problema e 100% painel/htaccess."
-echo "Copie o .htaccess da app AULAS:"
-echo "  cp $AULAS/.htaccess $APP/.htaccess"
-echo "  sed -i 's/aulas/robo/g' $APP/.htaccess"
+echo "APAGUE o app Python 3.13 e CRIE NOVO com Python 3.11"
+echo "Startup: passenger_wsgi.py | Entry: application"
