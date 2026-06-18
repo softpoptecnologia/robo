@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Registrar Atividade{% endblock %}
+{% block content %}
+<h2>Registrar Atividade</h2>
+<form method="POST" enctype="multipart/form-data" class="form-card">
+    <div class="form-row">
+        <div class="form-group">
+            <label for="group_id">Grupo *</label>
+            <select id="group_id" name="group_id" required>
+                {% for g in groups %}
+                <option value="{{ g.id }}">{{ g.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="activity_date">Data *</label>
+            <input type="date" id="activity_date" name="activity_date" required>
+        </div>
+    </div>
+    {% if current_user.is_admin or current_user.is_leader or not current_user.student_id %}
+    <div class="form-group">
+        <label for="student_id">Estudante responsável *</label>
+        <select id="student_id" name="student_id" required>
+            {% for s in students %}
+            <option value="{{ s.id }}" {% if current_user.student_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+    <div class="form-group">
+        <label for="description">Descrição da atividade *</label>
+        <textarea id="description" name="description" required></textarea>
+    </div>
+    <div class="form-group">
+        <label for="difficulties">Dificuldades encontradas</label>
+        <textarea id="difficulties" name="difficulties"></textarea>
+    </div>
+    <div class="form-group">
+        <label for="next_steps">Próximos passos</label>
+        <textarea id="next_steps" name="next_steps"></textarea>
+    </div>
+    <div class="form-group">
+        <label for="attachment">Anexo (opcional)</label>
+        <input type="file" id="attachment" name="attachment" accept="image/*,.pdf,.stl,.step,.zip">
+    </div>
+    <div class="actions">
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{{ url_for('activities.index') }}" class="btn btn-outline">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

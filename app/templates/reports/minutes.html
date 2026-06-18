@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Relatório — Atas{% endblock %}
+{% block content %}
+<h2>Resumo das Atas e Decisões</h2>
+{% for m in minutes %}
+<div class="section">
+    <h3>{{ m.meeting.meeting_date.strftime('%d/%m/%Y') }} — {{ m.meeting.group.name }}</h3>
+    <p>{{ m.summary }}</p>
+    {% if m.decisions %}<p><strong>Decisões:</strong> {{ m.decisions }}</p>{% endif %}
+</div>
+{% else %}
+<p class="text-muted">Nenhuma ata registrada.</p>
+{% endfor %}
+<a href="{{ url_for('reports.index') }}" class="btn btn-outline">Voltar</a>
+{% endblock %}

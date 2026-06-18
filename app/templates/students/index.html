@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Estudantes{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2>Estudantes</h2>
+    <a href="{{ url_for('students.create') }}" class="btn btn-primary">+ Novo Estudante</a>
+</div>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Nome</th><th>E-mail</th><th>Turma</th><th>Telefone</th><th>Status</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+            {% for s in students %}
+            <tr>
+                <td>{{ s.name }}</td>
+                <td>{{ s.email }}</td>
+                <td>{{ s.class_name }}</td>
+                <td>{{ s.phone or '—' }}</td>
+                <td><span class="badge badge-{{ s.status }}">{{ s.status }}</span></td>
+                <td class="actions">
+                    <a href="{{ url_for('students.view', student_id=s.id) }}" class="btn btn-sm btn-outline">Ver</a>
+                    <a href="{{ url_for('students.edit', student_id=s.id) }}" class="btn btn-sm btn-outline">Editar</a>
+                    <form method="POST" action="{{ url_for('students.delete', student_id=s.id) }}" style="display:inline" onsubmit="return confirm('Remover estudante?')">
+                        <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-muted">Nenhum estudante cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

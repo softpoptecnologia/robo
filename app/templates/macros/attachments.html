@@ -1,0 +1,25 @@
+{# Galeria de anexos de evidência #}
+{% macro attachment_gallery(evidence, compact=false) %}
+{% set items = evidence.attachments if evidence.attachments else ([] if not evidence.file_path else [{'file_path': evidence.file_path, 'caption': None, 'attachment_type': evidence.evidence_type}]) %}
+{% if items %}
+<div class="attachment-gallery{% if compact %} attachment-gallery--compact{% endif %}">
+    {% for att in items %}
+    {% set path = att.file_path if att.file_path is defined else att['file_path'] %}
+    {% set caption = att.caption if att.caption is defined else att.get('caption') %}
+    {% set att_type = att.attachment_type if att.attachment_type is defined else att.get('attachment_type', '') %}
+    <div class="attachment-item">
+        {% if path.endswith('.jpg') or path.endswith('.jpeg') or path.endswith('.png') or path.endswith('.gif') or path.endswith('.webp') or path.endswith('.bmp') %}
+        <a href="{{ url_for('uploaded_file', filename=path) }}" target="_blank">
+            <img src="{{ url_for('uploaded_file', filename=path) }}" alt="{{ caption or 'Anexo' }}" class="attachment-thumb">
+        </a>
+        {% else %}
+        <a href="{{ url_for('uploaded_file', filename=path) }}" target="_blank" class="attachment-file">
+            📎 {{ att_type or 'arquivo' }} — baixar
+        </a>
+        {% endif %}
+        {% if caption %}<span class="attachment-caption">{{ caption }}</span>{% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endmacro %}

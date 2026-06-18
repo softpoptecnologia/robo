@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if item else 'Nova' }} Etapa{% endblock %}
+{% block content %}
+<h2>{{ 'Editar' if item else 'Nova' }} Etapa do Cronograma</h2>
+<form method="POST" class="form-card">
+    {% if not item %}
+    <div class="form-group">
+        <label for="group_id">Grupo *</label>
+        <select id="group_id" name="group_id" required>
+            {% for g in groups %}
+            <option value="{{ g.id }}">{{ g.name }} — {{ g.project.title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+    <div class="form-group">
+        <label for="title">Título *</label>
+        <input type="text" id="title" name="title" value="{{ item.title if item else '' }}" required>
+    </div>
+    <div class="form-group">
+        <label for="description">Descrição</label>
+        <textarea id="description" name="description">{{ item.description if item else '' }}</textarea>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="start_date">Data inicial</label>
+            <input type="date" id="start_date" name="start_date" value="{{ item.start_date if item else '' }}">
+        </div>
+        <div class="form-group">
+            <label for="end_date">Data final</label>
+            <input type="date" id="end_date" name="end_date" value="{{ item.end_date if item else '' }}">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="responsible_id">Responsável</label>
+            <select id="responsible_id" name="responsible_id">
+                <option value="">— Nenhum —</option>
+                {% for s in students %}
+                <option value="{{ s.id }}" {% if item and item.responsible_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                {% for st in statuses %}
+                <option value="{{ st }}" {% if item and item.status == st %}selected{% endif %}>{{ st }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="actions">
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{{ url_for('schedule.index') }}" class="btn btn-outline">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Ata de Reunião{% endblock %}
+{% block content %}
+<h2>Ata — {{ minute.meeting.meeting_date.strftime('%d/%m/%Y') }}</h2>
+<div class="section detail-grid">
+    <div class="detail-item"><label>Grupo</label><p>{{ minute.meeting.group.name }}</p></div>
+    <div class="detail-item"><label>Projeto</label><p>{{ minute.meeting.project.title }}</p></div>
+    <div class="detail-item" style="grid-column:1/-1"><label>Resumo</label><p>{{ minute.summary }}</p></div>
+    {% if minute.decisions %}
+    <div class="detail-item" style="grid-column:1/-1"><label>Decisões</label><p>{{ minute.decisions }}</p></div>
+    {% endif %}
+</div>
+{% if minute.meeting.attendances %}
+<section class="section">
+    <h3>Presença</h3>
+    <ul class="list-simple">
+        {% for att in minute.meeting.attendances %}
+        <li>{{ att.student.name }} — {{ 'Presente' if att.present else 'Ausente' }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+{% if minute.tasks %}
+<section class="section">
+    <h3>Tarefas</h3>
+    <ul class="list-simple">
+        {% for t in minute.tasks %}
+        <li>{{ t.description }} — {{ t.responsible.name if t.responsible else 'Sem responsável' }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+<a href="{{ url_for('minutes.index') }}" class="btn btn-outline">Voltar</a>
+{% endblock %}

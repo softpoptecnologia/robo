@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ student.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2>{{ student.name }}</h2>
+    <a href="{{ url_for('students.edit', student_id=student.id) }}" class="btn btn-primary">Editar</a>
+</div>
+<div class="section detail-grid">
+    <div class="detail-item"><label>E-mail</label><p>{{ student.email }}</p></div>
+    <div class="detail-item"><label>Turma</label><p>{{ student.class_name }}</p></div>
+    <div class="detail-item"><label>Telefone</label><p>{{ student.phone or '—' }}</p></div>
+    <div class="detail-item"><label>Status</label><p><span class="badge badge-{{ student.status }}">{{ student.status }}</span></p></div>
+    {% if student.notes %}
+    <div class="detail-item" style="grid-column: 1/-1"><label>Observações</label><p>{{ student.notes }}</p></div>
+    {% endif %}
+</div>
+{% endblock %}

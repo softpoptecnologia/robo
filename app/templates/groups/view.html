@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2>{{ group.name }}</h2>
+    <div class="actions">
+        <a href="{{ url_for('evidence.create', group_id=group.id) }}" class="btn btn-primary">+ Nova Evidência</a>
+        <a href="{{ url_for('evidence.group_timeline', group_id=group.id) }}" class="btn btn-outline">Linha do Tempo</a>
+        {% if current_user.is_admin or current_user.is_leader %}
+        <a href="{{ url_for('groups.edit', group_id=group.id) }}" class="btn btn-outline">Editar</a>
+        {% endif %}
+    </div>
+</div>
+<div class="section detail-grid">
+    <div class="detail-item"><label>Projeto</label><p>{{ group.project.title }}</p></div>
+    <div class="detail-item"><label>Líder</label><p>{{ group.leader.name if group.leader else '—' }}</p></div>
+    <div class="detail-item"><label>Status</label><p><span class="badge badge-{{ group.status }}">{{ group.status }}</span></p></div>
+</div>
+<section class="section">
+    <h3>Membros ({{ group.members|length }})</h3>
+    <ul class="list-simple">
+        {% for m in group.members %}
+        <li>{{ m.name }} — {{ m.class_name }}</li>
+        {% else %}
+        <li class="text-muted">Nenhum membro.</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}

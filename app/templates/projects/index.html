@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Projetos{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2>Projetos</h2>
+    {% if current_user.is_admin or current_user.is_leader %}
+    <a href="{{ url_for('projects.create') }}" class="btn btn-primary">+ Novo Projeto</a>
+    {% endif %}
+</div>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Título</th><th>Área</th><th>Início</th><th>Previsão</th><th>Status</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+            {% for p in projects %}
+            <tr>
+                <td>{{ p.title }}</td>
+                <td>{{ p.area }}</td>
+                <td>{{ p.start_date.strftime('%d/%m/%Y') if p.start_date else '—' }}</td>
+                <td>{{ p.expected_end_date.strftime('%d/%m/%Y') if p.expected_end_date else '—' }}</td>
+                <td><span class="badge badge-{{ p.status|replace(' ', '-') }}">{{ p.status }}</span></td>
+                <td class="actions">
+                    <a href="{{ url_for('projects.view', project_id=p.id) }}" class="btn btn-sm btn-outline">Ver</a>
+                    <a href="{{ url_for('evidence.project_timeline', project_id=p.id) }}" class="btn btn-sm btn-outline">Timeline</a>
+                    {% if current_user.is_admin or current_user.is_leader %}
+                    <a href="{{ url_for('projects.edit', project_id=p.id) }}" class="btn btn-sm btn-outline">Editar</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-muted">Nenhum projeto cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

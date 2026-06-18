@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Nova Evidência{% endblock %}
+{% block content %}
+<h2>Registrar Evidência do Projeto</h2>
+<p class="text-muted" style="margin-bottom:1rem">
+    Documente o andamento do trabalho: descreva o que foi feito e anexe fotos do protótipo, arquivos CAD, vídeos ou documentos.
+</p>
+
+<form method="POST" enctype="multipart/form-data" class="form-card">
+    <div class="form-group">
+        <label for="group_id">Grupo *</label>
+        <select id="group_id" name="group_id" required onchange="location.href='{{ url_for('evidence.create') }}?group_id='+this.value{% if prefill.meeting_id %}+'&meeting_id={{ prefill.meeting_id }}'{% endif %}{% if prefill.schedule_item_id %}+'&schedule_item_id={{ prefill.schedule_item_id }}'{% endif %}">
+            <option value="">Selecione o grupo</option>
+            {% for g in groups %}
+            <option value="{{ g.id }}" {% if prefill.group_id and prefill.group_id|int == g.id %}selected{% endif %}>
+                {{ g.name }} — {{ g.project.title }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% if prefill.meeting_id %}
+    <input type="hidden" name="meeting_id" value="{{ prefill.meeting_id }}">
+    <div class="alert alert-success">Esta evidência será vinculada à reunião selecionada.</div>
+    {% endif %}
+
+    {% if current_user.is_admin or current_user.is_leader or not current_user.student_id %}
+    <div class="form-group">
+        <label for="student_id">Estudante responsável *</label>
+        <select id="student_id" name="student_id" required>
+            {% for s in group_students %}
+            <option value="{{ s.id }}" {% if current_user.student_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+
+    <div class="form-group">
+        <label for="title">Título da evidência *</label>
+        <input type="text" id="title" name="title" required placeholder="Ex: Construímos o braço robótico com 3 DOF">
+    </div>
+
+    <div class="form-group">
+        <label for="description">Descrição do que foi feito *</label>
+        <textarea id="description" name="description" required rows="5" placeholder="Descreva especificações, materiais, medidas, etapas realizadas..."></textarea>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="evidence_type">Tipo principal *</label>
+            <select id="evidence_type" name="evidence_type" required>
+                {% for t in evidence_types %}
+                <option value="{{ t }}">{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="schedule_item_id">Etapa do cronograma</label>
+            <select id="schedule_item_id" name="schedule_item_id">
+                <option value="">— Nenhuma —</option>
+                {% for item in schedule_items %}
+                <option value="{{ item.id }}"
+                    {% if prefill.group_id and item.group_id != prefill.group_id|int %}style="display:none"{% endif %}
+                    {% if prefill.schedule_item_id and prefill.schedule_item_id|int == item.id %}selected{% endif %}>
+                    {{ item.title }} ({{ item.group.name }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Anexos — fotos, CAD, vídeos, documentos</label>
+        <p class="text-muted" style="font-size:0.85rem;margin-bottom:0.5rem">
+            Você pode enviar vários arquivos: foto do protótipo, desenho CAD (.stl, .step, .dxf), PDF, etc.
+        </p>
+        <div id="attachments-list">
+            <div class="attachment-row form-row">
+                <div class="form-group">
+                    <select name="attachment_type">
+                        {% for val, label in attachment_types %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="attachment_caption" placeholder="Legenda (ex: Vista lateral do braço)">
+                </div>
+                <div class="form-group">
+                    <input type="file" name="files" accept="image/*,.pdf,.stl,.step,.stp,.dxf,.dwg,.zip,.mp4,.webm">
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline" onclick="addAttachmentRow()">+ Adicionar outro arquivo</button>
+    </div>
+
+    <div class="form-group">
+        <label for="external_link">Link externo (Google Drive, YouTube, GitHub...)</label>
+        <input type="url" id="external_link" name="external_link" placeholder="https://...">
+    </div>
+
+    <div class="form-group">
+        <label for="observations">Observações</label>
+        <textarea id="observations" name="observations" rows="2"></textarea>
+    </div>
+
+    <div class="actions">
+        <button type="submit" class="btn btn-primary">Salvar Evidência</button>
+        <a href="{{ url_for('evidence.timeline') }}" class="btn btn-outline">Cancelar</a>
+    </div>
+</form>
+
+<script>
+function addAttachmentRow() {
+    const list = document.getElementById('attachments-list');
+    const row = list.querySelector('.attachment-row').cloneNode(true);
+    row.querySelector('input[type="file"]').value = '';
+    row.querySelector('input[type="text"]').value = '';
+    list.appendChild(row);
+}
+</script>
+{% endblock %}

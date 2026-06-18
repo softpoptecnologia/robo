@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "macros/attachments.html" import attachment_gallery %}
+{% block title %}Reunião{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2>Reunião — {{ meeting.meeting_date.strftime('%d/%m/%Y') }}</h2>
+    <div class="actions">
+        <a href="{{ url_for('evidence.create', group_id=meeting.group_id, meeting_id=meeting.id) }}" class="btn btn-primary">+ Evidência desta Reunião</a>
+        {% if meeting.status != 'realizada' or not meeting.minute %}
+        <a href="{{ url_for('minutes.create', meeting_id=meeting.id) }}" class="btn btn-outline">Registrar Ata</a>
+        {% endif %}
+        {% if current_user.is_admin or current_user.is_leader %}
+        <a href="{{ url_for('meetings.edit', meeting_id=meeting.id) }}" class="btn btn-outline">Editar</a>
+        {% endif %}
+    </div>
+</div>
+<div class="section detail-grid">
+    <div class="detail-item"><label>Grupo</label><p>{{ meeting.group.name }}</p></div>
+    <div class="detail-item"><label>Projeto</label><p>{{ meeting.project.title }}</p></div>
+    <div class="detail-item"><label>Horário</label><p>{{ meeting.meeting_time.strftime('%H:%M') if meeting.meeting_time else '—' }}</p></div>
+    <div class="detail-item"><label>Local</label><p>{{ meeting.location or '—' }}</p></div>
+    <div class="detail-item"><label>Status</label><p><span class="badge badge-{{ meeting.status }}">{{ meeting.status }}</span></p></div>
+    {% if meeting.agenda %}
+    <div class="detail-item" style="grid-column:1/-1"><label>Pauta</label><p>{{ meeting.agenda }}</p></div>
+    {% endif %}
+</div>
+
+{% if meeting.minute %}
+<section class="section">
+    <h3>Ata</h3>
+    <p><a href="{{ url_for('minutes.view', minute_id=meeting.minute.id) }}">Ver ata desta reunião →</a></p>
+</section>
+{% endif %}
+
+<section class="section">
+    <h3>Evidências da Reunião ({{ meeting.evidences|length }})</h3>
+    <p class="text-muted" style="margin-bottom:1rem">Fotos, protótipos e documentos registrados nesta reunião.</p>
+    {% if meeting.evidences %}
+    {% for e in meeting.evidences %}
+    <div style="margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+        <strong>{{ e.title }}</strong> — {{ e.student.name }} ({{ e.created_at.strftime('%d/%m/%Y') }})
+        <p>{{ e.description[:200] }}{% if e.description|length > 200 %}...{% endif %}</p>
+        {{ attachment_gallery(e, compact=true) }}
+        <a href="{{ url_for('evidence.view', evidence_id=e.id) }}" class="btn btn-sm btn-outline">Ver detalhes</a>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="text-muted">Nenhuma evidência vinculada. Use o botão acima para registrar fotos ou documentos da reunião.</p>
+    {% endif %}
+</section>
+{% endblock %}

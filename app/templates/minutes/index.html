@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Atas{% endblock %}
+{% block content %}
+<h2>Atas de Reunião</h2>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Data</th><th>Grupo</th><th>Resumo</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+            {% for m in minutes %}
+            <tr>
+                <td>{{ m.meeting.meeting_date.strftime('%d/%m/%Y') }}</td>
+                <td>{{ m.meeting.group.name }}</td>
+                <td>{{ m.summary[:80] }}...</td>
+                <td><a href="{{ url_for('minutes.view', minute_id=m.id) }}" class="btn btn-sm btn-outline">Ver</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-muted">Nenhuma ata registrada.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

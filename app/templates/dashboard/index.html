@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h2>Dashboard</h2>
+<div class="cards">
+    <div class="card">
+        <span class="card-value">{{ total_projects }}</span>
+        <span class="card-label">Projetos</span>
+    </div>
+    <div class="card">
+        <span class="card-value">{{ total_groups }}</span>
+        <span class="card-label">Grupos Ativos</span>
+    </div>
+    <div class="card">
+        <span class="card-value">{{ total_students }}</span>
+        <span class="card-label">Estudantes Ativos</span>
+    </div>
+    <div class="card">
+        <span class="card-value">{{ scheduled_meetings }}</span>
+        <span class="card-label">Reuniões Agendadas</span>
+    </div>
+    <div class="card card-warning">
+        <span class="card-value">{{ overdue_items }}</span>
+        <span class="card-label">Etapas Atrasadas</span>
+    </div>
+    <div class="card card-warning">
+        <span class="card-value">{{ low_participation|length }}</span>
+        <span class="card-label">Baixa Participação</span>
+    </div>
+</div>
+
+{% if low_participation %}
+<section class="section">
+    <h3>Estudantes com baixa participação</h3>
+    <ul>
+        {% for item in low_participation %}
+        <li>{{ item.student.name }} — {{ item.percent }}%</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<div class="grid-2">
+    <section class="section">
+        <h3>Atividades recentes</h3>
+        {% if recent_activities %}
+        <ul class="list-simple">
+            {% for a in recent_activities %}
+            <li>{{ a.activity_date.strftime('%d/%m/%Y') }} — {{ a.student.name }}: {{ a.description[:60] }}...</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">Nenhuma atividade registrada.</p>
+        {% endif %}
+    </section>
+    <section class="section">
+        <h3>Evidências recentes</h3>
+        {% if recent_evidences %}
+        <ul class="list-simple">
+            {% for e in recent_evidences %}
+            <li><a href="{{ url_for('evidence.view', evidence_id=e.id) }}">{{ e.created_at.strftime('%d/%m/%Y') }} — {{ e.title }} ({{ e.group.name }})</a></li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">Nenhuma evidência registrada.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Relatório — Grupos{% endblock %}
+{% block content %}
+<h2>Progresso dos Grupos</h2>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Grupo</th><th>Projeto</th><th>Etapas</th><th>Concluídas</th><th>Atrasadas</th><th>Progresso</th></tr></thead>
+        <tbody>
+            {% for r in report %}
+            <tr>
+                <td>{{ r.group.name }}</td>
+                <td>{{ r.group.project.title }}</td>
+                <td>{{ r.total_steps }}</td>
+                <td>{{ r.done }}</td>
+                <td>{{ r.overdue }}</td>
+                <td>{{ r.progress }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<a href="{{ url_for('reports.index') }}" class="btn btn-outline">Voltar</a>
+{% endblock %}

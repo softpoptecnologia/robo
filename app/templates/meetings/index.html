@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Reuniões{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2>Reuniões</h2>
+    {% if current_user.is_admin or current_user.is_leader %}
+    <a href="{{ url_for('meetings.create') }}" class="btn btn-primary">+ Agendar Reunião</a>
+    {% endif %}
+</div>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Data</th><th>Horário</th><th>Grupo</th><th>Local</th><th>Status</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+            {% for m in meetings %}
+            <tr>
+                <td>{{ m.meeting_date.strftime('%d/%m/%Y') }}</td>
+                <td>{{ m.meeting_time.strftime('%H:%M') if m.meeting_time else '—' }}</td>
+                <td>{{ m.group.name }}</td>
+                <td>{{ m.location or '—' }}</td>
+                <td><span class="badge badge-{{ m.status }}">{{ m.status }}</span></td>
+                <td class="actions">
+                    <a href="{{ url_for('meetings.view', meeting_id=m.id) }}" class="btn btn-sm btn-outline">Ver</a>
+                    {% if m.status == 'realizada' and not m.minute %}
+                    <a href="{{ url_for('minutes.create', meeting_id=m.id) }}" class="btn btn-sm btn-primary">Ata</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-muted">Nenhuma reunião cadastrada.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

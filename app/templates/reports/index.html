@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Relatórios{% endblock %}
+{% block content %}
+<h2>Relatórios</h2>
+<div class="cards">
+    <a href="{{ url_for('reports.projects') }}" class="card" style="text-decoration:none;color:inherit">
+        <span class="card-label">Projetos Cadastrados</span>
+    </a>
+    <a href="{{ url_for('reports.groups') }}" class="card" style="text-decoration:none;color:inherit">
+        <span class="card-label">Progresso dos Grupos</span>
+    </a>
+    <a href="{{ url_for('reports.participation') }}" class="card" style="text-decoration:none;color:inherit">
+        <span class="card-label">Participação</span>
+    </a>
+    <a href="{{ url_for('reports.activities') }}" class="card" style="text-decoration:none;color:inherit">
+        <span class="card-label">Atividades por Grupo</span>
+    </a>
+    <a href="{{ url_for('reports.minutes') }}" class="card" style="text-decoration:none;color:inherit">
+        <span class="card-label">Atas e Decisões</span>
+    </a>
+    <a href="{{ url_for('reports.evolution') }}" class="card" style="text-decoration:none;color:inherit">
+        <span class="card-label">Evolução (Evidências)</span>
+    </a>
+</div>
+{% endblock %}

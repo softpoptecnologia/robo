@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "macros/attachments.html" import attachment_gallery %}
+{% block title %}Timeline — {{ project.title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2>Linha do Tempo — {{ project.title }}</h2>
+    <div class="actions">
+        <a href="{{ url_for('evidence.create') }}?project_id={{ project.id }}" class="btn btn-primary">+ Nova Evidência</a>
+        <a href="{{ url_for('projects.view', project_id=project.id) }}" class="btn btn-outline">Voltar</a>
+    </div>
+</div>
+<div class="timeline">
+    {% for e in evidences %}
+    <div class="timeline-item">
+        <div class="timeline-date">{{ e.created_at.strftime('%d/%m/%Y') }}</div>
+        <span class="timeline-type">{{ e.evidence_type }}</span>
+        <div class="timeline-title">{{ e.title }}</div>
+        <div class="timeline-meta">{{ e.group.name }} · {{ e.student.name }}</div>
+        <p>{{ e.description }}</p>
+        {{ attachment_gallery(e, compact=true) }}
+        <a href="{{ url_for('evidence.view', evidence_id=e.id) }}" class="btn btn-sm btn-outline">Detalhes</a>
+    </div>
+    {% else %}
+    <p class="text-muted">Nenhuma evidência registrada. <a href="{{ url_for('evidence.create') }}?project_id={{ project.id }}">Registrar primeira evidência</a></p>
+    {% endfor %}
+</div>
+{% endblock %}

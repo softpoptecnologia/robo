@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "macros/attachments.html" import attachment_gallery %}
+{% block title %}Timeline — {{ group.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2>Linha do Tempo — {{ group.name }}</h2>
+    <div class="actions">
+        <a href="{{ url_for('evidence.create', group_id=group.id) }}" class="btn btn-primary">+ Nova Evidência</a>
+        <a href="{{ url_for('groups.view', group_id=group.id) }}" class="btn btn-outline">Voltar</a>
+    </div>
+</div>
+<div class="timeline">
+    {% for event in events %}
+    <div class="timeline-item">
+        <div class="timeline-date">{{ event.date.strftime('%d/%m/%Y') }}</div>
+        {% if event.type == 'evidencia' or event.type == 'evidencia_reuniao' %}
+        <span class="timeline-type">Evidência — {{ event.obj.evidence_type }}{% if event.type == 'evidencia_reuniao' %} (reunião){% endif %}</span>
+        <div class="timeline-title">{{ event.obj.title }}</div>
+        <p>{{ event.obj.description }}</p>
+        {{ attachment_gallery(event.obj, compact=true) }}
+        <a href="{{ url_for('evidence.view', evidence_id=event.obj.id) }}" class="btn btn-sm btn-outline">Detalhes</a>
+        {% elif event.type == 'atividade' %}
+        <span class="timeline-type">Atividade</span>
+        <div class="timeline-title">{{ event.obj.student.name }}</div>
+        <p>{{ event.obj.description }}</p>
+        {% elif event.type == 'reuniao' %}
+        <span class="timeline-type">Reunião</span>
+        <div class="timeline-title">Reunião do grupo</div>
+        <p>{{ event.obj.agenda or 'Reunião realizada' }}</p>
+        <a href="{{ url_for('meetings.view', meeting_id=event.obj.id) }}" class="btn btn-sm btn-outline">Ver reunião</a>
+        {% elif event.type == 'etapa' %}
+        <span class="timeline-type">Etapa concluída</span>
+        <div class="timeline-title">{{ event.obj.title }}</div>
+        {% elif event.type == 'ata' %}
+        <span class="timeline-type">Ata</span>
+        <div class="timeline-title">Ata de reunião</div>
+        <p>{{ event.obj.summary[:200] }}{% if event.obj.summary|length > 200 %}...{% endif %}</p>
+        <a href="{{ url_for('minutes.view', minute_id=event.obj.id) }}" class="btn btn-sm btn-outline">Ver ata</a>
+        {% endif %}
+    </div>
+    {% else %}
+    <p class="text-muted">Nenhum evento registrado.</p>
+    {% endfor %}
+</div>
+{% endblock %}

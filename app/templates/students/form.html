@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if student else 'Novo' }} Estudante{% endblock %}
+{% block content %}
+<h2>{{ 'Editar' if student else 'Novo' }} Estudante</h2>
+<form method="POST" class="form-card">
+    <div class="form-group">
+        <label for="name">Nome *</label>
+        <input type="text" id="name" name="name" value="{{ student.name if student else '' }}" required>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="email">E-mail *</label>
+            <input type="email" id="email" name="email" value="{{ student.email if student else '' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="class_name">Turma *</label>
+            <input type="text" id="class_name" name="class_name" value="{{ student.class_name if student else '' }}" required>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="phone">Telefone</label>
+            <input type="text" id="phone" name="phone" value="{{ student.phone if student else '' }}">
+        </div>
+        <div class="form-group">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                {% for st in statuses %}
+                <option value="{{ st }}" {% if student and student.status == st %}selected{% endif %}>{{ st }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="notes">Observações</label>
+        <textarea id="notes" name="notes">{{ student.notes if student else '' }}</textarea>
+    </div>
+    <div class="actions">
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{{ url_for('students.index') }}" class="btn btn-outline">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

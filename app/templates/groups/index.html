@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Grupos{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2>Grupos</h2>
+    {% if current_user.is_admin or current_user.is_leader %}
+    <a href="{{ url_for('groups.create') }}" class="btn btn-primary">+ Novo Grupo</a>
+    {% endif %}
+</div>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Nome</th><th>Projeto</th><th>Líder</th><th>Membros</th><th>Status</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+            {% for g in groups %}
+            <tr>
+                <td>{{ g.name }}</td>
+                <td>{{ g.project.title }}</td>
+                <td>{{ g.leader.name if g.leader else '—' }}</td>
+                <td>{{ g.members|length }}</td>
+                <td><span class="badge badge-{{ g.status }}">{{ g.status }}</span></td>
+                <td class="actions">
+                    <a href="{{ url_for('groups.view', group_id=g.id) }}" class="btn btn-sm btn-outline">Ver</a>
+                    <a href="{{ url_for('evidence.group_timeline', group_id=g.id) }}" class="btn btn-sm btn-outline">Timeline</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-muted">Nenhum grupo cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

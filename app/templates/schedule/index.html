@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Cronograma{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2>Cronograma</h2>
+    <a href="{{ url_for('schedule.create') }}" class="btn btn-primary">+ Nova Etapa</a>
+</div>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Etapa</th><th>Grupo</th><th>Início</th><th>Fim</th><th>Responsável</th><th>Status</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.title }}</td>
+                <td>{{ item.group.name }}</td>
+                <td>{{ item.start_date.strftime('%d/%m/%Y') if item.start_date else '—' }}</td>
+                <td>{{ item.end_date.strftime('%d/%m/%Y') if item.end_date else '—' }}</td>
+                <td>{{ item.responsible.name if item.responsible else '—' }}</td>
+                <td><span class="badge badge-{{ item.status|replace(' ', '-') }}">{{ item.status }}</span></td>
+                <td class="actions">
+                    <a href="{{ url_for('evidence.create', group_id=item.group_id, schedule_item_id=item.id) }}" class="btn btn-sm btn-primary" title="Registrar evidência">+ Evidência</a>
+                    <a href="{{ url_for('schedule.edit', item_id=item.id) }}" class="btn btn-sm btn-outline">Editar</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="text-muted">Nenhuma etapa cadastrada.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

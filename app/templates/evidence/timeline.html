@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% from "macros/attachments.html" import attachment_gallery %}
+{% block title %}Linha do Tempo{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2>Linha do Tempo</h2>
+    <a href="{{ url_for('evidence.create') }}" class="btn btn-primary">+ Nova Evidência</a>
+</div>
+
+<form method="GET" class="filter-bar">
+    <div class="form-group">
+        <label>Projeto</label>
+        <select name="project_id">
+            <option value="">Todos</option>
+            {% for p in projects %}
+            <option value="{{ p.id }}" {% if filters.get('project_id') == p.id|string %}selected{% endif %}>{{ p.title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Grupo</label>
+        <select name="group_id">
+            <option value="">Todos</option>
+            {% for g in groups %}
+            <option value="{{ g.id }}" {% if filters.get('group_id') == g.id|string %}selected{% endif %}>{{ g.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Estudante</label>
+        <select name="student_id">
+            <option value="">Todos</option>
+            {% for s in students %}
+            <option value="{{ s.id }}" {% if filters.get('student_id') == s.id|string %}selected{% endif %}>{{ s.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Tipo</label>
+        <select name="evidence_type">
+            <option value="">Todos</option>
+            {% for t in evidence_types %}
+            <option value="{{ t }}" {% if filters.get('evidence_type') == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>De</label>
+        <input type="date" name="date_from" value="{{ filters.get('date_from', '') }}">
+    </div>
+    <div class="form-group">
+        <label>Até</label>
+        <input type="date" name="date_to" value="{{ filters.get('date_to', '') }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+    <a href="{{ url_for('evidence.timeline') }}" class="btn btn-outline">Limpar</a>
+</form>
+
+{% if evidences %}
+<div class="timeline">
+    {% for e in evidences %}
+    <div class="timeline-item">
+        <div class="timeline-date">{{ e.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
+        <span class="timeline-type">{{ e.evidence_type }}</span>
+        <div class="timeline-title">{{ e.title }}</div>
+        <div class="timeline-meta">
+            {{ e.group.name }} · {{ e.student.name }}
+            {% if e.meeting %} · Reunião {{ e.meeting.meeting_date.strftime('%d/%m/%Y') }}{% endif %}
+            {% if e.project_status_snapshot %} · Status: {{ e.project_status_snapshot }}{% endif %}
+            {% if e.schedule_item %} · Etapa: {{ e.schedule_item.title }}{% endif %}
+        </div>
+        <p>{{ e.description }}</p>
+        {{ attachment_gallery(e, compact=true) }}
+        {% if e.external_link %}
+        <p><a href="{{ e.external_link }}" target="_blank" rel="noopener">Link externo →</a></p>
+        {% endif %}
+        {% if e.observations %}
+        <p class="text-muted"><em>{{ e.observations }}</em></p>
+        {% endif %}
+        <a href="{{ url_for('evidence.view', evidence_id=e.id) }}" class="btn btn-sm btn-outline">Detalhes</a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">Nenhuma evidência encontrada. <a href="{{ url_for('evidence.create') }}">Registrar a primeira evidência</a></p>
+{% endif %}
+{% endblock %}

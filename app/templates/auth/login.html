@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Login — Clube de Robótica{% endblock %}
+{% block auth_content %}
+<div class="login-card">
+    <h2>Clube de Robótica</h2>
+    <p class="subtitle">Portal de Gerenciamento</p>
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+        <div class="form-group">
+            <label for="username">Usuário</label>
+            <input type="text" id="username" name="username" required autofocus>
+        </div>
+        <div class="form-group">
+            <label for="password">Senha</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+    </form>
+
+    <div class="demo-access">
+        <p class="demo-access-title">Acesso rápido para demonstração</p>
+        <div class="demo-buttons">
+            {% for demo in demo_accounts %}
+            <a href="{{ url_for('auth.login_demo', role=demo.role) }}" class="demo-btn {{ demo.css_class }}">
+                <span class="demo-btn-label">{{ demo.label }}</span>
+                <span class="demo-btn-desc">{{ demo.description }}</span>
+                <span class="demo-btn-user">{{ demo.username }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        <p class="login-hint">Execute <code>python seed.py --force</code> se as contas de demo não existirem.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if project else 'Novo' }} Projeto{% endblock %}
+{% block content %}
+<h2>{{ 'Editar' if project else 'Novo' }} Projeto</h2>
+<form method="POST" class="form-card">
+    <div class="form-group">
+        <label for="title">Título *</label>
+        <input type="text" id="title" name="title" value="{{ project.title if project else '' }}" required>
+    </div>
+    <div class="form-group">
+        <label for="description">Descrição</label>
+        <textarea id="description" name="description">{{ project.description if project else '' }}</textarea>
+    </div>
+    <div class="form-group">
+        <label for="objective">Objetivo</label>
+        <textarea id="objective" name="objective">{{ project.objective if project else '' }}</textarea>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="area">Área *</label>
+            <select id="area" name="area" required>
+                {% for a in areas %}
+                <option value="{{ a }}" {% if project and project.area == a %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                {% for st in statuses %}
+                <option value="{{ st }}" {% if project and project.status == st %}selected{% endif %}>{{ st }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="start_date">Data de início</label>
+            <input type="date" id="start_date" name="start_date" value="{{ project.start_date if project else '' }}">
+        </div>
+        <div class="form-group">
+            <label for="expected_end_date">Previsão de conclusão</label>
+            <input type="date" id="expected_end_date" name="expected_end_date" value="{{ project.expected_end_date if project else '' }}">
+        </div>
+    </div>
+    <div class="actions">
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{{ url_for('projects.index') }}" class="btn btn-outline">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

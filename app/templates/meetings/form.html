@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if meeting else 'Agendar' }} Reunião{% endblock %}
+{% block content %}
+<h2>{{ 'Editar' if meeting else 'Agendar' }} Reunião</h2>
+<form method="POST" class="form-card">
+    {% if not meeting %}
+    <div class="form-group">
+        <label for="group_id">Grupo *</label>
+        <select id="group_id" name="group_id" required>
+            {% for g in groups %}
+            <option value="{{ g.id }}">{{ g.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+    <div class="form-row">
+        <div class="form-group">
+            <label for="meeting_date">Data *</label>
+            <input type="date" id="meeting_date" name="meeting_date" value="{{ meeting.meeting_date if meeting else '' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="meeting_time">Horário</label>
+            <input type="time" id="meeting_time" name="meeting_time" value="{{ meeting.meeting_time if meeting else '14:00' }}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="location">Local</label>
+        <input type="text" id="location" name="location" value="{{ meeting.location if meeting else '' }}">
+    </div>
+    <div class="form-group">
+        <label for="agenda">Pauta</label>
+        <textarea id="agenda" name="agenda">{{ meeting.agenda if meeting else '' }}</textarea>
+    </div>
+    <div class="form-group">
+        <label for="status">Status</label>
+        <select id="status" name="status">
+            {% for st in statuses %}
+            <option value="{{ st }}" {% if meeting and meeting.status == st %}selected{% endif %}>{{ st }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="actions">
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{{ url_for('meetings.index') }}" class="btn btn-outline">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

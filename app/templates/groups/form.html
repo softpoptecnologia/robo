@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if group else 'Novo' }} Grupo{% endblock %}
+{% block content %}
+<h2>{{ 'Editar' if group else 'Novo' }} Grupo</h2>
+<form method="POST" class="form-card">
+    <div class="form-group">
+        <label for="name">Nome do grupo *</label>
+        <input type="text" id="name" name="name" value="{{ group.name if group else '' }}" required>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="project_id">Projeto *</label>
+            <select id="project_id" name="project_id" required>
+                {% for p in projects %}
+                <option value="{{ p.id }}" {% if group and group.project_id == p.id %}selected{% endif %}>{{ p.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="leader_id">Líder</label>
+            <select id="leader_id" name="leader_id">
+                <option value="">— Nenhum —</option>
+                {% for s in students %}
+                <option value="{{ s.id }}" {% if group and group.leader_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="status">Status</label>
+        <select id="status" name="status">
+            {% for st in statuses %}
+            <option value="{{ st }}" {% if group and group.status == st %}selected{% endif %}>{{ st }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Participantes</label>
+        <div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:0.5rem">
+            {% for s in students %}
+            <label style="display:block;padding:0.25rem 0">
+                <input type="checkbox" name="member_ids" value="{{ s.id }}"
+                    {% if group and s in group.members %}checked{% endif %}>
+                {{ s.name }} ({{ s.class_name }})
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="actions">
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{{ url_for('groups.index') }}" class="btn btn-outline">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

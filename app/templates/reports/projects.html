@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Relatório — Projetos{% endblock %}
+{% block content %}
+<h2>Projetos Cadastrados</h2>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Título</th><th>Área</th><th>Status</th><th>Grupos</th></tr></thead>
+        <tbody>
+            {% for p in projects %}
+            <tr>
+                <td>{{ p.title }}</td>
+                <td>{{ p.area }}</td>
+                <td><span class="badge badge-{{ p.status|replace(' ', '-') }}">{{ p.status }}</span></td>
+                <td>{{ p.groups|length }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<a href="{{ url_for('reports.index') }}" class="btn btn-outline">Voltar</a>
+{% endblock %}

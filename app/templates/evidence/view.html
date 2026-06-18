@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "macros/attachments.html" import attachment_gallery %}
+{% block title %}{{ evidence.title }}{% endblock %}
+{% block content %}
+<h2>{{ evidence.title }}</h2>
+<div class="section detail-grid">
+    <div class="detail-item"><label>Data</label><p>{{ evidence.created_at.strftime('%d/%m/%Y %H:%M') }}</p></div>
+    <div class="detail-item"><label>Tipo</label><p>{{ evidence.evidence_type }}</p></div>
+    <div class="detail-item"><label>Projeto</label><p>{{ evidence.project.title }}</p></div>
+    <div class="detail-item"><label>Grupo</label><p>{{ evidence.group.name }}</p></div>
+    <div class="detail-item"><label>Registrado por</label><p>{{ evidence.student.name }}</p></div>
+    <div class="detail-item"><label>Status do projeto</label><p>{{ evidence.project_status_snapshot or '—' }}</p></div>
+    {% if evidence.schedule_item %}
+    <div class="detail-item"><label>Etapa do cronograma</label><p>{{ evidence.schedule_item.title }}</p></div>
+    {% endif %}
+    {% if evidence.meeting %}
+    <div class="detail-item"><label>Reunião vinculada</label>
+        <p><a href="{{ url_for('meetings.view', meeting_id=evidence.meeting.id) }}">{{ evidence.meeting.meeting_date.strftime('%d/%m/%Y') }}</a></p>
+    </div>
+    {% endif %}
+    <div class="detail-item" style="grid-column:1/-1"><label>Descrição</label><p>{{ evidence.description }}</p></div>
+    {% if evidence.observations %}
+    <div class="detail-item" style="grid-column:1/-1"><label>Observações</label><p>{{ evidence.observations }}</p></div>
+    {% endif %}
+</div>
+
+<section class="section">
+    <h3>Anexos</h3>
+    {{ attachment_gallery(evidence) }}
+    {% if evidence.external_link %}
+    <p style="margin-top:1rem"><a href="{{ evidence.external_link }}" target="_blank" rel="noopener">Abrir link externo →</a></p>
+    {% endif %}
+    {% if not evidence.attachments and not evidence.file_path and not evidence.external_link %}
+    <p class="text-muted">Nenhum anexo nesta evidência.</p>
+    {% endif %}
+</section>
+
+<div class="actions">
+    <a href="{{ url_for('evidence.timeline') }}" class="btn btn-outline">Voltar</a>
+    {% if can_delete %}
+    <form method="POST" action="{{ url_for('evidence.delete', evidence_id=evidence.id) }}" onsubmit="return confirm('Remover evidência e todos os anexos?')">
+        <button type="submit" class="btn btn-danger">Excluir</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

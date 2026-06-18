@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Relatório — Participação{% endblock %}
+{% block content %}
+<h2>Participação dos Estudantes</h2>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Estudante</th><th>Reuniões</th><th>Presenças</th><th>Faltas</th><th>%</th><th>Atividades</th></tr></thead>
+        <tbody>
+            {% for d in data %}
+            <tr {% if d.percent < 70 %}style="background:#fef3c7"{% endif %}>
+                <td>{{ d.student.name }}</td>
+                <td>{{ d.total_meetings }}</td>
+                <td>{{ d.present }}</td>
+                <td>{{ d.absent }}</td>
+                <td>{{ d.percent }}%</td>
+                <td>{{ d.activities }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<a href="{{ url_for('reports.index') }}" class="btn btn-outline">Voltar</a>
+{% endblock %}

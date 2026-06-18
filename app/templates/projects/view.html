@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ project.title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2>{{ project.title }}</h2>
+    <div class="actions">
+        <a href="{{ url_for('evidence.create', project_id=project.id) }}" class="btn btn-primary">+ Nova Evidência</a>
+        <a href="{{ url_for('evidence.project_timeline', project_id=project.id) }}" class="btn btn-outline">Linha do Tempo</a>
+        {% if current_user.is_admin or current_user.is_leader %}
+        <a href="{{ url_for('projects.edit', project_id=project.id) }}" class="btn btn-outline">Editar</a>
+        {% endif %}
+    </div>
+</div>
+<div class="section detail-grid">
+    <div class="detail-item"><label>Área</label><p>{{ project.area }}</p></div>
+    <div class="detail-item"><label>Status</label><p><span class="badge badge-{{ project.status|replace(' ', '-') }}">{{ project.status }}</span></p></div>
+    <div class="detail-item"><label>Início</label><p>{{ project.start_date.strftime('%d/%m/%Y') if project.start_date else '—' }}</p></div>
+    <div class="detail-item"><label>Previsão</label><p>{{ project.expected_end_date.strftime('%d/%m/%Y') if project.expected_end_date else '—' }}</p></div>
+    {% if project.description %}
+    <div class="detail-item" style="grid-column:1/-1"><label>Descrição</label><p>{{ project.description }}</p></div>
+    {% endif %}
+    {% if project.objective %}
+    <div class="detail-item" style="grid-column:1/-1"><label>Objetivo</label><p>{{ project.objective }}</p></div>
+    {% endif %}
+</div>
+{% if project.groups %}
+<section class="section">
+    <h3>Grupos ({{ project.groups|length }})</h3>
+    <ul class="list-simple">
+        {% for g in project.groups %}
+        <li><a href="{{ url_for('groups.view', group_id=g.id) }}">{{ g.name }}</a> — {{ g.status }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+{% endblock %}
