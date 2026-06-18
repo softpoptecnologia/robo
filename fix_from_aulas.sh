@@ -23,15 +23,18 @@ echo "ROBO .htaccess:"
 cat "$ROBO/.htaccess"
 echo ""
 
-# 3. Copiar passenger_wsgi stub (sem .py) se existir na aulas
+# 3. Copiar passenger_wsgi stub (sem .py)
 if [ -f "$AULAS/passenger_wsgi" ]; then
-    echo "--- Copiando passenger_wsgi stub ---"
+    echo "--- Copiando passenger_wsgi stub da aulas ---"
     cp "$AULAS/passenger_wsgi" "$ROBO/passenger_wsgi"
-    chmod 755 "$ROBO/passenger_wsgi"
-    echo "Conteudo:"
-    cat "$ROBO/passenger_wsgi"
-    echo ""
+else
+    echo "--- Usando passenger_wsgi_loader do repo ---"
+    cp "$ROBO/passenger_wsgi_loader" "$ROBO/passenger_wsgi"
 fi
+chmod 755 "$ROBO/passenger_wsgi"
+echo "Conteudo passenger_wsgi:"
+cat "$ROBO/passenger_wsgi"
+echo ""
 
 # 4. Remover public/.htaccess duplicado (pode conflitar)
 rm -f "$ROBO/public/.htaccess" 2>/dev/null && echo "Removido public/.htaccess duplicado"
