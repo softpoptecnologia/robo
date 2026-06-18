@@ -3,6 +3,7 @@ import os
 import traceback
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+os.chdir(BASE)
 if BASE not in sys.path:
     sys.path.insert(0, BASE)
 
@@ -19,7 +20,7 @@ def _log(msg):
 
 try:
     from app import app as application
-    _log("OK: app carregado")
+    _log("OK: app carregado via passenger_wsgi.py")
 except Exception:
     _err = traceback.format_exc()
     _log("ERRO ao importar app:\n" + _err)
@@ -27,9 +28,6 @@ except Exception:
     def application(environ, start_response):
         start_response("500 Internal Server Error", [("Content-Type", "text/html; charset=utf-8")])
         html = f"""<!DOCTYPE html><html><body style="font-family:monospace;padding:20px">
-        <h1>Erro ao iniciar o Clube de Robótica</h1>
-        <pre>{_err}</pre>
-        <p>Log: {LOG}</p>
-        <p>Rode no terminal: <code>python check_server.py</code></p>
-        </body></html>"""
+        <h1>Erro ao iniciar</h1><pre>{_err}</pre>
+        <p>Log: {LOG}</p></body></html>"""
         return [html.encode("utf-8")]

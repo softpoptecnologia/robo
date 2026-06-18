@@ -1,36 +1,41 @@
 #!/bin/bash
-# Rode no servidor: bash fix_cpanel.sh
-
+# bash fix_cpanel.sh
 set -e
 cd /home/ailson/robo.etegaranhuns.com.br
 
-echo "=== 1. Atualizar codigo ==="
-git pull origin main || true
+echo "=== git pull ==="
+git pull origin main
 
-echo "=== 2. Criar .htaccess (formato CloudLinux igual app aulas) ==="
-cp -f htaccess.example .htaccess
+echo "=== .htaccess (igual app aulas, Python 3.13) ==="
+cat > .htaccess << 'EOF'
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/ailson/robo.etegaranhuns.com.br"
+PassengerBaseURI "/"
+PassengerPython "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.13/bin/python"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+EOF
 chmod 644 .htaccess
-ls -la .htaccess
+echo "--- conteudo .htaccess ---"
+cat .htaccess
 
-echo "=== 3. Virtualenv e dependencias ==="
+echo "=== dependencias ==="
 source /home/ailson/virtualenv/robo.etegaranhuns.com.br/3.13/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt -q
 
-echo "=== 4. Testar import Python ==="
-python -c "from app import app; print('OK Flask app:', app)"
+echo "=== teste python ==="
+python check_server.py
 
-echo "=== 5. Pastas ==="
+echo "=== permissoes ==="
+chmod 755 passenger_wsgi.py application.py 2>/dev/null || true
 mkdir -p uploads tmp
-chmod 775 uploads 2>/dev/null || true
+chmod 775 uploads tmp 2>/dev/null || true
+touch tmp/restart.txt
 
 echo ""
-echo "PRONTO. Agora no cPanel:"
-echo "  1. Setup Python App"
-echo "  2. REMOVA o app antigo se existir"
-echo "  3. CRIE NOVO:"
-echo "     - Root: /home/ailson/robo.etegaranhuns.com.br"
-echo "     - Startup: passenger_wsgi.py"
-echo "     - Entry point: application"
-echo "  4. Clique RESTART"
+echo "=== AGORA NO PAINEL ==="
+echo "1. Edite o Python App robo.etegaranhuns.com.br"
+echo "2. Startup file: passenger_wsgi.py"
+echo "3. Entry point: application"
+echo "4. Salve e clique RESTART"
 echo ""
-echo "Teste: https://robo.etegaranhuns.com.br/login"
+echo "Teste: https://robo.etegaranhuns.com.br/ping"
