@@ -6,7 +6,7 @@
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
 PassengerAppRoot "/home/ailson/robo.etegaranhuns.com.br"
 PassengerBaseURI "/"
-PassengerPython "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/python"
+PassengerPython "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.13/bin/python"
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
 ```
 
@@ -43,7 +43,7 @@ from app import app as application
 ## Dependências
 
 ```bash
-source /home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/activate
+source /home/ailson/virtualenv/robo.etegaranhuns.com.br/3.13/bin/activate
 pip install -r requirements.txt
 ```
 

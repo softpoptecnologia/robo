@@ -13,7 +13,7 @@ chmod 644 .htaccess
 ls -la .htaccess
 
 echo "=== 3. Virtualenv e dependencias ==="
-source /home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/bin/activate
+source /home/ailson/virtualenv/robo.etegaranhuns.com.br/3.13/bin/activate
 pip install -r requirements.txt
 
 echo "=== 4. Testar import Python ==="
