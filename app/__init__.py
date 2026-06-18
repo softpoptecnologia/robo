@@ -11,7 +11,10 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+    try:
+        os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+    except OSError:
+        pass
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -40,16 +43,23 @@ def create_app(config_class=Config):
     app.register_blueprint(reports_bp, url_prefix="/reports")
     app.register_blueprint(evidence_bp, url_prefix="/evidence")
 
+    @app.route("/ping")
+    def ping():
+        return "pong", 200
+
     @app.route("/uploads/<path:filename>")
     @login_required
     def uploaded_file(filename):
         from flask import send_from_directory
         return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
-    with app.app_context():
-        db.create_all()
-        _migrate_db()
-        _seed_admin()
+    try:
+        with app.app_context():
+            db.create_all()
+            _migrate_db()
+            _seed_admin()
+    except Exception as exc:
+        app.logger.warning("DB init: %s", exc)
 
     if app.config.get("DEBUG"):
         _setup_debug(app)

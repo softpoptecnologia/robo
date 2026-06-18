@@ -49,6 +49,35 @@ pip install -r requirements.txt
 
 Restart no painel.
 
+## Se der 503 (Service Unavailable)
+
+O app quebrou ao iniciar. Rode no terminal:
+
+```bash
+cd /home/ailson/robo.etegaranhuns.com.br
+source /home/ailson/virtualenv/robo.etegaranhuns.com.br/3.13/bin/activate
+pip install -r requirements.txt
+python check_server.py
+```
+
+Se `check_server.py` der erro, copie a mensagem.
+
+Se der **TUDO OK**, atualize o `.htaccess` e reinicie:
+
+```bash
+cp htaccess.example .htaccess
+```
+
+Teste também: https://robo.etegaranhuns.com.br/ping (deve mostrar `pong`)
+
+Veja o log:
+
+```bash
+cat stderr.log
+```
+
+---
+
 ## Teste
 
 https://robo.etegaranhuns.com.br/login
