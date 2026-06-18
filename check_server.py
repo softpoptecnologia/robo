@@ -20,7 +20,9 @@ except ImportError as e:
     sys.exit(1)
 
 try:
-    from app import app
+    from app import create_app
+
+    app = create_app()
     print("App OK:", app)
     print("URL map (primeiras rotas):")
     for rule in list(app.url_map.iter_rules())[:5]:

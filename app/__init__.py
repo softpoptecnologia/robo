@@ -138,7 +138,3 @@ def _seed_admin():
         admin.set_password("admin123")
         db.session.add(admin)
         db.session.commit()
-
-
-# Instância usada pelo pyserver / Passenger: from app import app as application
-app = create_app()

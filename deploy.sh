@@ -22,14 +22,12 @@ cp "$AULAS/.htaccess" .htaccess
 sed -i 's/aulas\.etegaranhuns\.com\.br/robo.etegaranhuns.com.br/g' .htaccess
 chmod 644 .htaccess
 
-if [ -f "$AULAS/passenger_wsgi" ]; then
-    echo "4. passenger_wsgi stub = copia da aulas"
-    cp "$AULAS/passenger_wsgi" passenger_wsgi
-    sed -i 's/aulas\.etegaranhuns\.com\.br/robo.etegaranhuns.com.br/g' passenger_wsgi
-    chmod 755 passenger_wsgi
-else
-    echo "4. Sem stub passenger_wsgi na aulas (ok)"
-fi
+echo "4. Permissoes (WSGI roda como nobody — precisa escrever no banco)"
+mkdir -p tmp uploads
+chmod 775 tmp uploads 2>/dev/null || true
+touch clube_robotica.db stderr.log 2>/dev/null || true
+chmod 664 clube_robotica.db stderr.log 2>/dev/null || true
+chmod u+w . 2>/dev/null || true
 
 echo "5. Dependencias Python 3.11"
 if [ ! -x "$VENV/bin/python" ]; then
@@ -41,8 +39,8 @@ source "$VENV/bin/activate"
 pip install -r requirements.txt -q
 python check_server.py
 
-mkdir -p tmp uploads
 touch tmp/restart.txt
+echo > stderr.log
 
 echo ""
 echo "=== .htaccess ==="
@@ -50,4 +48,5 @@ cat .htaccess
 echo ""
 echo "=== PRONTO ==="
 echo "Painel: Startup passenger_wsgi.py | Entry application | RESTART"
+echo "Nao use startup 'passenger_wsgi' (sem .py)"
 echo "Teste: https://robo.etegaranhuns.com.br/ping"

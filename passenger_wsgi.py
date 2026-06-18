@@ -1,6 +1,18 @@
 import os
 import sys
+import traceback
 
-sys.path.insert(0, os.path.dirname(__file__))
+BASE = os.path.dirname(os.path.abspath(__file__))
+os.chdir(BASE)
+sys.path.insert(0, BASE)
 
-from app import app as application
+try:
+    from app import create_app
+
+    application = create_app()
+except Exception:
+    _error = traceback.format_exc()
+
+    def application(environ, start_response):
+        start_response("500 Internal Server Error", [("Content-Type", "text/plain; charset=utf-8")])
+        return [_error.encode("utf-8")]
