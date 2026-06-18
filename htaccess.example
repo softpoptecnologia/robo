@@ -1,4 +1,5 @@
-# Configuração Passenger / Python (cPanel / CloudLinux)
+# Modelo — copie para .htaccess se o cPanel não criar automaticamente
+# O cPanel altera o .htaccess local; por isso este arquivo NÃO é versionado no Git.
 
 SetEnv SECRET_KEY "troque-por-uma-chave-secreta-longa"
 SetEnv FLASK_DEBUG "1"

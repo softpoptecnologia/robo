@@ -102,3 +102,51 @@ chmod 775 uploads
 Acesse: https://robo.etegaranhuns.com.br/login
 
 Login demo: `/login/demo/admin`
+
+---
+
+## Erro: `git pull` — conflito no `.htaccess`
+
+O cPanel modifica o `.htaccess` automaticamente. O Git bloqueia o pull com:
+
+```
+Your local changes to the following files would be overwritten by merge: .htaccess
+```
+
+### Solução no Terminal do cPanel (SSH)
+
+```bash
+cd /home/ailson/robo.etegaranhuns.com.br
+
+# 1. Guardar cópia do .htaccess que o cPanel gerou
+cp .htaccess .htaccess.cpanel.bak
+
+# 2. Descartar alteração local só no Git (mantém o arquivo no disco)
+git checkout -- .htaccess
+
+# 3. Atualizar o projeto
+git pull origin main
+```
+
+Se `git checkout -- .htaccess` não funcionar, use:
+
+```bash
+git stash push -m "htaccess cpanel" -- .htaccess
+git pull origin main
+```
+
+### Após o pull — garantir variáveis de debug no `.htaccess`
+
+Edite `.htaccess` e confira se existem estas linhas (adicione se faltarem):
+
+```apache
+SetEnv FLASK_DEBUG "1"
+SetEnv DEBUG "1"
+SetEnv SECRET_KEY "sua-chave-secreta"
+```
+
+O bloco `Passenger...` gerado pelo cPanel deve permanecer. Use `htaccess.example` como referência.
+
+Depois: **Restart** da aplicação Python no painel.
+
+> O `.htaccess` não é mais versionado no Git para evitar este conflito no futuro.
