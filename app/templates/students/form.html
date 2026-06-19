@@ -35,9 +35,72 @@
         <label for="notes">Observações</label>
         <textarea id="notes" name="notes">{{ student.notes if student else '' }}</textarea>
     </div>
+
+    <div class="access-section">
+        <h3>Acesso ao portal</h3>
+        {% if student and student.user %}
+        <p class="text-muted">Este estudante já possui login. Altere usuário, perfil ou senha abaixo.</p>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="username">Usuário *</label>
+                <input type="text" id="username" name="username" value="{{ student.user.username }}" required autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label for="role">Perfil *</label>
+                <select id="role" name="role" required>
+                    {% for value, label in user_roles %}
+                    <option value="{{ value }}" {% if student.user.role == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="password">Nova senha</label>
+            <input type="password" id="password" name="password" minlength="6" autocomplete="new-password" placeholder="Deixe em branco para manter a atual">
+        </div>
+        {% else %}
+        <label class="checkbox-label">
+            <input type="checkbox" id="enable_access" name="enable_access" onchange="toggleAccessFields()">
+            Criar login para este estudante
+        </label>
+        <div id="access-fields" class="access-fields" hidden>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="username">Usuário *</label>
+                    <input type="text" id="username" name="username" value="{{ suggested_username }}" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="role">Perfil *</label>
+                    <select id="role" name="role">
+                        {% for value, label in user_roles %}
+                        <option value="{{ value }}" {% if value == 'participant' %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="password">Senha *</label>
+                <input type="password" id="password" name="password" minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+            </div>
+            <p class="text-muted">O aluno entrará com este usuário e senha na tela de login.</p>
+        </div>
+        {% endif %}
+    </div>
+
     <div class="actions">
         <button type="submit" class="btn btn-primary">Salvar</button>
         <a href="{{ url_for('students.index') }}" class="btn btn-outline">Cancelar</a>
     </div>
 </form>
+{% if not student or not student.user %}
+<script>
+function toggleAccessFields() {
+    const on = document.getElementById('enable_access').checked;
+    document.getElementById('access-fields').hidden = !on;
+    document.getElementById('username').required = on;
+    document.getElementById('password').required = on;
+    document.getElementById('role').required = on;
+}
+</script>
+{% endif %}
 {% endblock %}

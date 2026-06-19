@@ -10,6 +10,19 @@
     <div class="detail-item"><label>Turma</label><p>{{ student.class_name }}</p></div>
     <div class="detail-item"><label>Telefone</label><p>{{ student.phone or '—' }}</p></div>
     <div class="detail-item"><label>Status</label><p><span class="badge badge-{{ student.status }}">{{ student.status }}</span></p></div>
+    <div class="detail-item"><label>Acesso ao portal</label>
+        {% if student.user %}
+        <p>
+            <strong>{{ student.user.username }}</strong>
+            — {{ dict(user_roles).get(student.user.role, student.user.role) }}
+        </p>
+        <form method="POST" action="{{ url_for('students.revoke_access', student_id=student.id) }}" style="margin-top:0.5rem" onsubmit="return confirm('Remover o login deste estudante?')">
+            <button type="submit" class="btn btn-sm btn-danger">Remover acesso</button>
+        </form>
+        {% else %}
+        <p class="text-muted">Sem login — edite o estudante para criar acesso.</p>
+        {% endif %}
+    </div>
     {% if student.notes %}
     <div class="detail-item" style="grid-column: 1/-1"><label>Observações</label><p>{{ student.notes }}</p></div>
     {% endif %}

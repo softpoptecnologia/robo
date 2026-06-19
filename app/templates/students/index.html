@@ -8,7 +8,7 @@
 <div class="table-wrap">
     <table>
         <thead>
-            <tr><th>Nome</th><th>E-mail</th><th>Turma</th><th>Telefone</th><th>Status</th><th>Ações</th></tr>
+            <tr><th>Nome</th><th>E-mail</th><th>Turma</th><th>Acesso</th><th>Status</th><th>Ações</th></tr>
         </thead>
         <tbody>
             {% for s in students %}
@@ -16,7 +16,14 @@
                 <td>{{ s.name }}</td>
                 <td>{{ s.email }}</td>
                 <td>{{ s.class_name }}</td>
-                <td>{{ s.phone or '—' }}</td>
+                <td>
+                    {% if s.user %}
+                    <span class="badge badge-ativo">{{ s.user.username }}</span>
+                    <span class="text-muted">({{ s.user.role }})</span>
+                    {% else %}
+                    <span class="text-muted">Sem login</span>
+                    {% endif %}
+                </td>
                 <td><span class="badge badge-{{ s.status }}">{{ s.status }}</span></td>
                 <td class="actions">
                     <a href="{{ url_for('students.view', student_id=s.id) }}" class="btn btn-sm btn-outline">Ver</a>
