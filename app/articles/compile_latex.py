@@ -4,7 +4,9 @@ import hashlib
 import os
 import platform
 import shutil
+import stat
 import subprocess
+import tarfile
 import tempfile
 import zipfile
 from urllib.request import urlretrieve
@@ -12,10 +14,14 @@ from urllib.request import urlretrieve
 from app.articles.export_latex import _copy_figure_for_ieee, _prepare_figures, build_latex_document
 from app.articles.ieee_latex_assets import ieee_cls_path, read_latex_preamble
 
-TECTONIC_RELEASE = (
-    "https://github.com/tectonic-typesetting/tectonic/releases/download/"
-    "tectonic%400.16.9/tectonic-0.16.9-x86_64-pc-windows-msvc.zip"
+_TECTONIC_BASE = (
+    "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.16.9"
 )
+_TECTONIC_ASSETS = {
+    "Windows": ("tectonic-0.16.9-x86_64-pc-windows-msvc.zip", "zip", "tectonic.exe"),
+    "Linux": ("tectonic-0.16.9-x86_64-unknown-linux-gnu.tar.gz", "tar.gz", "tectonic"),
+    "Darwin": ("tectonic-0.16.9-x86_64-apple-darwin.tar.gz", "tar.gz", "tectonic"),
+}
 
 
 def _build_tex(article, upload_folder, brand_assets_folder):
@@ -45,25 +51,66 @@ def _cache_path(cache_folder, project_id, content_hash):
 
 
 def _find_tectonic(bin_dir):
-    bundled = os.path.join(bin_dir, "tectonic.exe")
-    if os.path.isfile(bundled):
-        return bundled
+    for name in ("tectonic.exe", "tectonic"):
+        bundled = os.path.join(bin_dir, name)
+        if os.path.isfile(bundled):
+            return bundled
     return shutil.which("tectonic")
+
+
+def _tectonic_asset_for_platform():
+    system = platform.system()
+    machine = platform.machine().lower()
+    if system == "Linux" and machine not in ("x86_64", "amd64"):
+        return None
+    if system == "Darwin" and machine == "arm64":
+        return (
+            "tectonic-0.16.9-aarch64-apple-darwin.tar.gz",
+            "tar.gz",
+            "tectonic",
+        )
+    return _TECTONIC_ASSETS.get(system)
+
+
+def _extract_tectonic(archive_path, archive_type, bin_dir, binary_name):
+    if archive_type == "zip":
+        with zipfile.ZipFile(archive_path) as zf:
+            zf.extractall(bin_dir)
+    else:
+        with tarfile.open(archive_path, "r:gz") as tf:
+            tf.extractall(bin_dir)
+    binary_path = os.path.join(bin_dir, binary_name)
+    if os.path.isfile(binary_path):
+        os.chmod(binary_path, os.stat(binary_path).st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+
+def _download_tectonic(bin_dir):
+    asset = _tectonic_asset_for_platform()
+    if not asset:
+        return None
+
+    filename, archive_type, _binary_name = asset
+    url = f"{_TECTONIC_BASE}/{filename}"
+    os.makedirs(bin_dir, exist_ok=True)
+    archive_path = os.path.join(bin_dir, filename)
+
+    try:
+        urlretrieve(url, archive_path)
+        _extract_tectonic(archive_path, archive_type, bin_dir, _binary_name)
+    except OSError:
+        return None
+    finally:
+        if os.path.isfile(archive_path):
+            os.remove(archive_path)
+
+    return _find_tectonic(bin_dir)
 
 
 def _ensure_tectonic(bin_dir):
     exe = _find_tectonic(bin_dir)
     if exe:
         return exe
-    if platform.system() != "Windows":
-        return None
-    os.makedirs(bin_dir, exist_ok=True)
-    zip_path = os.path.join(bin_dir, "tectonic.zip")
-    urlretrieve(TECTONIC_RELEASE, zip_path)
-    with zipfile.ZipFile(zip_path) as zf:
-        zf.extractall(bin_dir)
-    os.remove(zip_path)
-    return _find_tectonic(bin_dir)
+    return _download_tectonic(bin_dir)
 
 
 def _find_pdflatex():
@@ -197,7 +244,8 @@ def compile_article_pdf(article, upload_folder, cache_folder, brand_assets_folde
         if result is None:
             return None, (
                 "Compilador LaTeX não encontrado. "
-                "O Tectonic será baixado automaticamente na pasta bin/ na primeira execução (Windows)."
+                "O Tectonic é baixado automaticamente em bin/ na primeira compilação "
+                "(Linux/Windows). Se falhar, instale manualmente — veja DEPLOY.md."
             )
         if result.returncode != 0:
             return None, _compile_error_message(result)

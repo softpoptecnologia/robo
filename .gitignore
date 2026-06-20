@@ -5,8 +5,10 @@ venv/
 *.db
 uploads/
 arquivos/ieee-template/
+bin/tectonic
 bin/tectonic.exe
-bin/tectonic.zip
+bin/*.tar.gz
+bin/*.zip
 test_main.tex
 .DS_Store
 error.log
