@@ -48,6 +48,10 @@ class Config:
         "TECTONIC_BIN_DIR",
         os.path.join(BASE_DIR, "bin"),
     )
+    TECTONIC_CACHE_DIR = os.environ.get(
+        "TECTONIC_CACHE_DIR",
+        os.path.join(BASE_DIR, "arquivos", "tectonic-cache"),
+    )
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB
     LOG_FILE = os.environ.get("LOG_FILE", os.path.join(BASE_DIR, "error.log"))
 

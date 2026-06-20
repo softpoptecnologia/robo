@@ -101,6 +101,7 @@ def _article_view_context(article_data, project_id):
         cfg["TECTONIC_BIN_DIR"],
         project_id,
         url_for("projects.article", project_id=project_id, format="pdf"),
+        cfg["TECTONIC_CACHE_DIR"],
     )
 
 
@@ -218,6 +219,7 @@ def article(project_id):
             current_app.config["BRAND_ASSETS_FOLDER"],
             current_app.config["TECTONIC_BIN_DIR"],
             project.id,
+            current_app.config["TECTONIC_CACHE_DIR"],
         )
         filename = f"artigo-{_slug_filename(project.title)}.pdf"
         response = make_response(pdf_bytes)

@@ -9,6 +9,10 @@ if sys.executable != INTERP and os.path.isfile(INTERP):
 BASE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(BASE)
 sys.path.insert(0, BASE)
+os.environ.setdefault(
+    "TECTONIC_CACHE_DIR",
+    os.path.join(BASE, "arquivos", "tectonic-cache"),
+)
 
 # Garante que o venv esta no path (Flask instalado la)
 SITE = "/home/ailson/virtualenv/robo.etegaranhuns.com.br/3.11/lib/python3.11/site-packages"

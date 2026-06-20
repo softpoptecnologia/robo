@@ -19,7 +19,7 @@ _TECTONIC_BASE = (
 )
 _TECTONIC_ASSETS = {
     "Windows": ("tectonic-0.16.9-x86_64-pc-windows-msvc.zip", "zip", "tectonic.exe"),
-    "Linux": ("tectonic-0.16.9-x86_64-unknown-linux-gnu.tar.gz", "tar.gz", "tectonic"),
+    "Linux": ("tectonic-0.16.9-x86_64-unknown-linux-musl.tar.gz", "tar.gz", "tectonic"),
     "Darwin": ("tectonic-0.16.9-x86_64-apple-darwin.tar.gz", "tar.gz", "tectonic"),
 }
 
@@ -113,6 +113,14 @@ def _ensure_tectonic(bin_dir):
     return _download_tectonic(bin_dir)
 
 
+def _tectonic_subprocess_env(tectonic_cache_dir):
+    env = os.environ.copy()
+    if tectonic_cache_dir:
+        os.makedirs(tectonic_cache_dir, exist_ok=True)
+        env["TECTONIC_CACHE_DIR"] = tectonic_cache_dir
+    return env
+
+
 def _find_pdflatex():
     candidates = [
         shutil.which("pdflatex"),
@@ -133,7 +141,7 @@ def _find_pdflatex():
     return None
 
 
-def _run_compile(work_dir, main_tex, bin_dir):
+def _run_compile(work_dir, main_tex, bin_dir, tectonic_cache_dir=None):
     tectonic = _ensure_tectonic(bin_dir)
     if tectonic:
         return subprocess.run(
@@ -142,6 +150,7 @@ def _run_compile(work_dir, main_tex, bin_dir):
             text=True,
             cwd=work_dir,
             timeout=300,
+            env=_tectonic_subprocess_env(tectonic_cache_dir),
         )
 
     pdflatex = _find_pdflatex()
@@ -168,22 +177,34 @@ def _run_compile(work_dir, main_tex, bin_dir):
     return last
 
 
+_BUNDLE_NETWORK_HINT = (
+    "O Tectonic precisa baixar pacotes LaTeX na primeira compilação, "
+    "mas o servidor não acessa relay.fullyjustified.net. "
+    "Rode scripts/bootstrap_tectonic_cache.sh numa máquina Linux com internet, "
+    "compacte arquivos/tectonic-cache/ e envie ao servidor — veja DEPLOY.md."
+)
+
+
 def _compile_error_message(result):
     parts = []
     if result.stdout:
         parts.append(result.stdout.strip())
     if result.stderr:
         parts.append(result.stderr.strip())
-    return "\n".join(parts) or "Falha desconhecida na compilação LaTeX."
+    message = "\n".join(parts) or "Falha desconhecida na compilação LaTeX."
+    lowered = message.lower()
+    if "couldn't get it from the internet" in lowered or "isn't cached" in lowered:
+        return f"{message}\n\n{_BUNDLE_NETWORK_HINT}"
+    return message
 
 
-def compile_tex_file(work_dir, tex_filename, bin_dir):
+def compile_tex_file(work_dir, tex_filename, bin_dir, tectonic_cache_dir=None):
     """Compila um .tex já presente em work_dir. Retorna caminho do PDF ou None."""
     main_tex = os.path.join(work_dir, tex_filename)
     if not os.path.isfile(main_tex):
         return None
 
-    result = _run_compile(work_dir, main_tex, bin_dir)
+    result = _run_compile(work_dir, main_tex, bin_dir, tectonic_cache_dir)
     if result is None or result.returncode != 0:
         return None
 
@@ -192,7 +213,7 @@ def compile_tex_file(work_dir, tex_filename, bin_dir):
     return pdf_path if os.path.isfile(pdf_path) else None
 
 
-def ensure_reference_pdf(brand_assets_folder, bin_dir):
+def ensure_reference_pdf(brand_assets_folder, bin_dir, tectonic_cache_dir=None):
     """Garante conference_101719.pdf no template (usa o do zip ou compila)."""
     from app.articles.ieee_latex_assets import (
         REFERENCE_PDF,
@@ -206,7 +227,7 @@ def ensure_reference_pdf(brand_assets_folder, bin_dir):
     if existing:
         return existing
 
-    pdf_path = compile_tex_file(template_dir, REFERENCE_TEX, bin_dir)
+    pdf_path = compile_tex_file(template_dir, REFERENCE_TEX, bin_dir, tectonic_cache_dir)
     if pdf_path:
         dest = os.path.join(template_dir, REFERENCE_PDF)
         if pdf_path != dest:
@@ -215,7 +236,15 @@ def ensure_reference_pdf(brand_assets_folder, bin_dir):
     return None
 
 
-def compile_article_pdf(article, upload_folder, cache_folder, brand_assets_folder, bin_dir, project_id):
+def compile_article_pdf(
+    article,
+    upload_folder,
+    cache_folder,
+    brand_assets_folder,
+    bin_dir,
+    project_id,
+    tectonic_cache_dir=None,
+):
     """Retorna (pdf_bytes, error_message). error_message é None em sucesso."""
     try:
         cls_path = ieee_cls_path(brand_assets_folder)
@@ -240,7 +269,7 @@ def compile_article_pdf(article, upload_folder, cache_folder, brand_assets_folde
         with open(main_tex, "w", encoding="utf-8") as handle:
             handle.write(tex)
 
-        result = _run_compile(work_dir, main_tex, bin_dir)
+        result = _run_compile(work_dir, main_tex, bin_dir, tectonic_cache_dir)
         if result is None:
             return None, (
                 "Compilador LaTeX não encontrado. "

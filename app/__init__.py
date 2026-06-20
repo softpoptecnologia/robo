@@ -116,11 +116,16 @@ def create_app(config_class=Config):
     try:
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
         os.makedirs(app.config["LATEX_CACHE_FOLDER"], exist_ok=True)
+        os.makedirs(app.config["TECTONIC_CACHE_DIR"], exist_ok=True)
         from app.articles.ieee_latex_assets import ensure_template_dir
         from app.articles.compile_latex import ensure_reference_pdf
 
         ensure_template_dir(app.config["BRAND_ASSETS_FOLDER"])
-        ensure_reference_pdf(app.config["BRAND_ASSETS_FOLDER"], app.config["TECTONIC_BIN_DIR"])
+        ensure_reference_pdf(
+            app.config["BRAND_ASSETS_FOLDER"],
+            app.config["TECTONIC_BIN_DIR"],
+            app.config["TECTONIC_CACHE_DIR"],
+        )
     except OSError:
         pass
     except FileNotFoundError as exc:
