@@ -68,12 +68,17 @@ bash scripts/bootstrap_tectonic_cache.sh
 
 ### 2. Se o curl falhar (servidor sem saída para relay)
 
-Gere o cache numa máquina **Linux x86_64** com internet (WSL, VPS ou o próprio PC):
+Gere o cache numa máquina **com internet**. No **Windows** (este repositório):
+
+```powershell
+cd C:\Repositorios\clube-robotica
+powershell -ExecutionPolicy Bypass -File scripts\bootstrap_tectonic_cache.ps1
+tar -czf tectonic-cache.tgz -C arquivos tectonic-cache
+```
+
+No **Linux** (WSL/VPS):
 
 ```bash
-git clone ... # ou copie o projeto
-cd clube-robotica
-# instale bin/tectonic (musl) como acima
 bash scripts/bootstrap_tectonic_cache.sh
 tar -czf tectonic-cache.tgz -C arquivos tectonic-cache
 ```

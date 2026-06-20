@@ -5,6 +5,7 @@ venv/
 *.db
 uploads/
 arquivos/ieee-template/
+tectonic-cache.tgz
 arquivos/tectonic-cache/
 bin/tectonic
 bin/tectonic.exe
