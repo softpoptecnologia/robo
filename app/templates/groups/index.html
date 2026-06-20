@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+{% from "macros/layout.html" import page_header %}
+{% from "macros/pagination.html" import render_pagination %}
 {% block title %}Grupos{% endblock %}
 {% block content %}
-<div class="page-header">
-    <h2>Grupos</h2>
-    {% if current_user.is_admin or current_user.is_leader %}
+{% call page_header('Grupos', 'Equipes de trabalho vinculadas aos projetos do clube.') %}
+    {% if can('groups.manage') %}
     <a href="{{ url_for('groups.create') }}" class="btn btn-primary">+ Novo Grupo</a>
     {% endif %}
-</div>
+{% endcall %}
 <div class="table-wrap">
     <table>
         <thead>
@@ -15,7 +16,7 @@
         <tbody>
             {% for g in groups %}
             <tr>
-                <td>{{ g.name }}</td>
+                <td><strong>{{ g.name }}</strong></td>
                 <td>{{ g.project.title }}</td>
                 <td>{{ g.leader.name if g.leader else '—' }}</td>
                 <td>{{ g.members|length }}</td>
@@ -26,9 +27,10 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="6" class="text-muted">Nenhum grupo cadastrado.</td></tr>
+            <tr><td colspan="6" class="text-muted" style="text-align:center;padding:2rem">Nenhum grupo cadastrado.</td></tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+{{ render_pagination(pagination, 'groups.index') }}
 {% endblock %}

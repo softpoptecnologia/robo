@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+{% from "macros/layout.html" import page_header, empty_state %}
+{% from "macros/pagination.html" import render_pagination %}
 {% block title %}Projetos{% endblock %}
 {% block content %}
-<div class="page-header">
-    <h2>Projetos</h2>
-    {% if current_user.is_admin or current_user.is_leader %}
+{% call page_header('Projetos', 'Acompanhe os projetos do clube e o progresso de cada equipe.') %}
+    {% if can('projects.manage') %}
     <a href="{{ url_for('projects.create') }}" class="btn btn-primary">+ Novo Projeto</a>
     {% endif %}
-</div>
+{% endcall %}
 <div class="table-wrap">
     <table>
         <thead>
@@ -15,7 +16,7 @@
         <tbody>
             {% for p in projects %}
             <tr>
-                <td>{{ p.title }}</td>
+                <td><strong>{{ p.title }}</strong></td>
                 <td>{{ p.area }}</td>
                 <td>{{ p.start_date.strftime('%d/%m/%Y') if p.start_date else '—' }}</td>
                 <td>{{ p.expected_end_date.strftime('%d/%m/%Y') if p.expected_end_date else '—' }}</td>
@@ -23,15 +24,19 @@
                 <td class="actions">
                     <a href="{{ url_for('projects.view', project_id=p.id) }}" class="btn btn-sm btn-outline">Ver</a>
                     <a href="{{ url_for('evidence.project_timeline', project_id=p.id) }}" class="btn btn-sm btn-outline">Timeline</a>
-                    {% if current_user.is_admin or current_user.is_leader %}
+                    {% if can('projects.manage') %}
                     <a href="{{ url_for('projects.edit', project_id=p.id) }}" class="btn btn-sm btn-outline">Editar</a>
                     {% endif %}
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="6" class="text-muted">Nenhum projeto cadastrado.</td></tr>
+            <tr><td colspan="6" class="text-muted" style="text-align:center;padding:2rem">Nenhum projeto cadastrado.</td></tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+{{ render_pagination(pagination, 'projects.index') }}
+{% if not projects and can('projects.manage') %}
+{{ empty_state('Comece cadastrando o primeiro projeto do clube.', url_for('projects.create'), '+ Cadastrar projeto') }}
+{% endif %}
 {% endblock %}

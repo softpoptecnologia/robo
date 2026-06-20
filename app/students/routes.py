@@ -1,16 +1,17 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required
 
-from app.decorators import role_required
+from app.decorators import permission_required
 from app.extensions import db
 from app.models import Student, User
+from app.pagination import paginate_query
 
 students_bp = Blueprint("students", __name__)
 
 STATUSES = ["ativo", "inativo", "removido"]
 USER_ROLES = [
     ("participant", "Participante"),
-    ("leader", "Líder de grupo"),
+    ("leader", "Gerente"),
 ]
 
 
@@ -80,15 +81,16 @@ def _student_form_context(student=None):
 
 @students_bp.route("/")
 @login_required
-@role_required("admin")
+@permission_required("students.view")
 def index():
-    students = Student.query.order_by(Student.name).all()
-    return render_template("students/index.html", students=students)
+    query = Student.query.order_by(Student.name)
+    pagination = paginate_query(query)
+    return render_template("students/index.html", students=pagination.items, pagination=pagination)
 
 
 @students_bp.route("/new", methods=["GET", "POST"])
 @login_required
-@role_required("admin")
+@permission_required("students.manage")
 def create():
     if request.method == "POST":
         name = request.form.get("name", "").strip()
@@ -142,7 +144,7 @@ def create():
 
 @students_bp.route("/<int:student_id>/edit", methods=["GET", "POST"])
 @login_required
-@role_required("admin")
+@permission_required("students.manage")
 def edit(student_id):
     student = db.get_or_404(Student, student_id)
 
@@ -190,7 +192,7 @@ def edit(student_id):
 
 @students_bp.route("/<int:student_id>")
 @login_required
-@role_required("admin")
+@permission_required("students.view")
 def view(student_id):
     student = db.get_or_404(Student, student_id)
     return render_template("students/view.html", student=student, user_roles=USER_ROLES)
@@ -198,7 +200,7 @@ def view(student_id):
 
 @students_bp.route("/<int:student_id>/revoke-access", methods=["POST"])
 @login_required
-@role_required("admin")
+@permission_required("students.manage")
 def revoke_access(student_id):
     student = db.get_or_404(Student, student_id)
     if not student.user:
@@ -213,7 +215,7 @@ def revoke_access(student_id):
 
 @students_bp.route("/<int:student_id>/delete", methods=["POST"])
 @login_required
-@role_required("admin")
+@permission_required("students.manage")
 def delete(student_id):
     student = db.get_or_404(Student, student_id)
     if student.user:

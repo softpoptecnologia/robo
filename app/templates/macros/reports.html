@@ -1,0 +1,13 @@
+{% macro pdf_link(endpoint, label='Exportar PDF') %}
+{% if can('reports.export') %}
+{% set pdf_args = request.args.to_dict() %}
+{% set _ = pdf_args.update({'format': 'pdf'}) %}
+<a href="{{ url_for(endpoint, **pdf_args) }}" class="btn btn-outline" target="_blank">{{ label }}</a>
+{% endif %}
+{% endmacro %}
+
+{% macro filter_actions(endpoint, clear_endpoint=None) %}
+<button type="submit" class="btn btn-primary">Filtrar</button>
+<a href="{{ url_for(clear_endpoint or endpoint) }}" class="btn btn-outline">Limpar</a>
+{{ pdf_link(endpoint) }}
+{% endmacro %}

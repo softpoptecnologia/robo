@@ -1,0 +1,32 @@
+{% from "pdf/macros/erp.html" import empty_msg %}
+
+{% if minutes %}
+<table class="grid">
+    <thead>
+        <tr>
+            <th style="width:10%">Data</th>
+            <th style="width:18%">Grupo</th>
+            <th style="width:42%">Resumo</th>
+            <th style="width:30%">Decisões</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in minutes %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td>{{ m.meeting.meeting_date.strftime('%d/%m/%Y') }}</td>
+            <td>{{ m.meeting.group.name }}</td>
+            <td>{{ m.summary }}</td>
+            <td>{{ m.decisions or '—' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3">Total de atas</td>
+            <td class="num">{{ minutes|length }}</td>
+        </tr>
+    </tfoot>
+</table>
+{% else %}
+{{ empty_msg('Nenhum registro encontrado para os parâmetros informados.') }}
+{% endif %}

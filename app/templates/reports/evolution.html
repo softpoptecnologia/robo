@@ -1,85 +1,37 @@
 {% extends "base.html" %}
+{% from "macros/reports.html" import filter_actions %}
 {% block title %}Relatório — Evolução{% endblock %}
 {% block content %}
-<h2>Relatório de Evolução</h2>
+<div class="page-header">
+    <h2>Relatório de Evolução</h2>
+</div>
 
-<section class="section">
-    <h3>Últimas evidências registradas</h3>
-    {% if recent %}
-    <ul class="list-simple">
-        {% for e in recent %}
-        <li>
-            <a href="{{ url_for('evidence.view', evidence_id=e.id) }}">{{ e.title }}</a>
-            — {{ e.group.name }} ({{ e.created_at.strftime('%d/%m/%Y') }})
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p class="text-muted">Nenhuma evidência registrada ainda.</p>
-    {% endif %}
-</section>
-
-<section class="section">
-    <h3>Evidências por Grupo</h3>
-    <div class="table-wrap">
-        <table>
-            <thead><tr><th>Grupo</th><th>Quantidade</th></tr></thead>
-            <tbody>
-                {% for name, count in by_group %}
-                <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
-                {% else %}
-                <tr><td colspan="2" class="text-muted">Sem evidências.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<form method="GET" class="filter-bar">
+    <div class="form-group">
+        <label>Projeto</label>
+        <select name="project_id">
+            <option value="">Todos</option>
+            {% for p in projects %}
+            <option value="{{ p.id }}" {% if filters.get('project_id') == p.id|string %}selected{% endif %}>{{ p.title }}</option>
+            {% endfor %}
+        </select>
     </div>
-</section>
-
-<section class="section">
-    <h3>Grupos sem evidências recentes ({{ days }} dias)</h3>
-    {% if inactive_groups %}
-    <ul class="list-simple">
-        {% for g in inactive_groups %}
-        <li>{{ g.name }} — {{ g.project.title }}</li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p class="text-muted">Todos os grupos registraram evidências recentemente.</p>
-    {% endif %}
-</section>
-
-<section class="section">
-    <h3>Participantes que mais contribuíram</h3>
-    <div class="table-wrap">
-        <table>
-            <thead><tr><th>Estudante</th><th>Evidências</th></tr></thead>
-            <tbody>
-                {% for name, total in top_contributors %}
-                <tr><td>{{ name }}</td><td>{{ total }}</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="form-group">
+        <label>Grupo</label>
+        <select name="group_id">
+            <option value="">Todos</option>
+            {% for g in groups %}
+            <option value="{{ g.id }}" {% if filters.get('group_id') == g.id|string %}selected{% endif %}>{{ g.name }}</option>
+            {% endfor %}
+        </select>
     </div>
-</section>
-
-<section class="section">
-    <h3>Cronograma vs Evidências</h3>
-    <div class="table-wrap">
-        <table>
-            <thead><tr><th>Etapa</th><th>Grupo</th><th>Status</th><th>Evidências</th></tr></thead>
-            <tbody>
-                {% for r in schedule_vs_evidence %}
-                <tr>
-                    <td>{{ r.item.title }}</td>
-                    <td>{{ r.item.group.name }}</td>
-                    <td><span class="badge badge-{{ r.item.status|replace(' ', '-') }}">{{ r.item.status }}</span></td>
-                    <td>{{ r.evidence_count }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="form-group">
+        <label>Período (dias)</label>
+        <input type="number" name="days" min="1" max="365" value="{{ filters.get('days', days|string) }}">
     </div>
-</section>
+    {{ filter_actions('reports.evolution') }}
+</form>
 
+{% include "reports/partials/evolution_content.html" %}
 <a href="{{ url_for('reports.index') }}" class="btn btn-outline">Voltar</a>
 {% endblock %}

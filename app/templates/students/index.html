@@ -1,10 +1,13 @@
 {% extends "base.html" %}
+{% from "macros/layout.html" import page_header %}
+{% from "macros/pagination.html" import render_pagination %}
 {% block title %}Estudantes{% endblock %}
 {% block content %}
-<div class="page-header">
-    <h2>Estudantes</h2>
+{% call page_header('Estudantes', 'Cadastro de membros e acesso ao portal.') %}
+    {% if can('students.manage') %}
     <a href="{{ url_for('students.create') }}" class="btn btn-primary">+ Novo Estudante</a>
-</div>
+    {% endif %}
+{% endcall %}
 <div class="table-wrap">
     <table>
         <thead>
@@ -27,10 +30,12 @@
                 <td><span class="badge badge-{{ s.status }}">{{ s.status }}</span></td>
                 <td class="actions">
                     <a href="{{ url_for('students.view', student_id=s.id) }}" class="btn btn-sm btn-outline">Ver</a>
+                    {% if can('students.manage') %}
                     <a href="{{ url_for('students.edit', student_id=s.id) }}" class="btn btn-sm btn-outline">Editar</a>
                     <form method="POST" action="{{ url_for('students.delete', student_id=s.id) }}" style="display:inline" onsubmit="return confirm('Remover estudante?')">
                         <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
                     </form>
+                    {% endif %}
                 </td>
             </tr>
             {% else %}
@@ -39,4 +44,5 @@
         </tbody>
     </table>
 </div>
+{{ render_pagination(pagination, 'students.index') }}
 {% endblock %}

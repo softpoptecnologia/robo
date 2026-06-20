@@ -1,0 +1,6 @@
+{% extends "pdf/base.html" %}
+{% block title %}Cronograma{% endblock %}
+{% block report_code %}RPT-CRN{% endblock %}
+{% block report_title %}Relatório Analítico de Cronograma{% endblock %}
+{% block report_title_footer %}RPT-CRN Cronograma{% endblock %}
+{% block content %}{% include "pdf/partials/schedule_list.html" %}{% endblock %}

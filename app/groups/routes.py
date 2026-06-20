@@ -1,10 +1,11 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from app.decorators import role_required
+from app.decorators import permission_required
 from app.extensions import db
 from app.models import Group, Project, Student, User
-from app.utils import user_groups
+from app.pagination import paginate_query
+from app.utils import groups_scoped_query, user_groups
 
 groups_bp = Blueprint("groups", __name__)
 
@@ -13,17 +14,16 @@ STATUSES = ["ativo", "inativo", "concluido"]
 
 @groups_bp.route("/")
 @login_required
+@permission_required("groups.view")
 def index():
-    if current_user.is_admin:
-        groups = Group.query.order_by(Group.name).all()
-    else:
-        groups = user_groups(current_user)
-    return render_template("groups/index.html", groups=groups)
+    query = groups_scoped_query(current_user)
+    pagination = paginate_query(query)
+    return render_template("groups/index.html", groups=pagination.items, pagination=pagination)
 
 
 @groups_bp.route("/new", methods=["GET", "POST"])
 @login_required
-@role_required("admin", "leader")
+@permission_required("groups.manage")
 def create():
     projects = Project.query.order_by(Project.title).all()
     students = Student.query.filter_by(status="ativo").order_by(Student.name).all()
@@ -58,6 +58,7 @@ def create():
 
 @groups_bp.route("/<int:group_id>")
 @login_required
+@permission_required("groups.view")
 def view(group_id):
     group = db.get_or_404(Group, group_id)
     return render_template("groups/view.html", group=group)
@@ -65,7 +66,7 @@ def view(group_id):
 
 @groups_bp.route("/<int:group_id>/edit", methods=["GET", "POST"])
 @login_required
-@role_required("admin", "leader")
+@permission_required("groups.manage")
 def edit(group_id):
     group = db.get_or_404(Group, group_id)
     projects = Project.query.order_by(Project.title).all()
@@ -93,7 +94,7 @@ def edit(group_id):
 
 @groups_bp.route("/<int:group_id>/delete", methods=["POST"])
 @login_required
-@role_required("admin")
+@permission_required("groups.delete")
 def delete(group_id):
     group = db.get_or_404(Group, group_id)
     db.session.delete(group)

@@ -1,0 +1,17 @@
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Título</th><th>Área</th><th>Status</th><th>Grupos</th></tr></thead>
+        <tbody>
+            {% for p in projects %}
+            <tr>
+                <td>{{ p.title }}</td>
+                <td>{{ p.area }}</td>
+                <td>{{ p.status }}</td>
+                <td>{{ p.groups|length }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-muted">Nenhum projeto encontrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

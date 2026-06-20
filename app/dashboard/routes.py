@@ -3,6 +3,8 @@ from datetime import date
 from flask import Blueprint, render_template
 from flask_login import login_required
 
+from app.decorators import permission_required
+
 from app.models import (
     ActivityLog,
     Evidence,
@@ -20,6 +22,7 @@ dashboard_bp = Blueprint("dashboard", __name__)
 
 @dashboard_bp.route("/")
 @login_required
+@permission_required("dashboard.view")
 def index():
     total_projects = Project.query.count()
     total_groups = Group.query.filter_by(status="ativo").count()

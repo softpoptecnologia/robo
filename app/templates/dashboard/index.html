@@ -1,36 +1,89 @@
 {% extends "base.html" %}
+{% from "macros/layout.html" import page_header %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<h2>Dashboard</h2>
+{{ page_header('Dashboard', 'Visão geral do clube — projetos, equipes e registros recentes.') }}
 <div class="cards">
+    {% if can('projects.view') %}
+    <a href="{{ url_for('projects.index') }}" class="card card-link">
+        <span class="card-value">{{ total_projects }}</span>
+        <span class="card-label">Projetos</span>
+    </a>
+    {% else %}
     <div class="card">
         <span class="card-value">{{ total_projects }}</span>
         <span class="card-label">Projetos</span>
     </div>
+    {% endif %}
+
+    {% if can('groups.view') %}
+    <a href="{{ url_for('groups.index') }}" class="card card-link">
+        <span class="card-value">{{ total_groups }}</span>
+        <span class="card-label">Grupos Ativos</span>
+    </a>
+    {% else %}
     <div class="card">
         <span class="card-value">{{ total_groups }}</span>
         <span class="card-label">Grupos Ativos</span>
     </div>
+    {% endif %}
+
+    {% if can('students.view') %}
+    <a href="{{ url_for('students.index') }}" class="card card-link">
+        <span class="card-value">{{ total_students }}</span>
+        <span class="card-label">Estudantes Ativos</span>
+    </a>
+    {% else %}
     <div class="card">
         <span class="card-value">{{ total_students }}</span>
         <span class="card-label">Estudantes Ativos</span>
     </div>
+    {% endif %}
+
+    {% if can('meetings.view') %}
+    <a href="{{ url_for('meetings.index', status='agendada') }}" class="card card-link">
+        <span class="card-value">{{ scheduled_meetings }}</span>
+        <span class="card-label">Reuniões Agendadas</span>
+    </a>
+    {% else %}
     <div class="card">
         <span class="card-value">{{ scheduled_meetings }}</span>
         <span class="card-label">Reuniões Agendadas</span>
     </div>
+    {% endif %}
+
+    {% if can('schedule.view') %}
+    <a href="{{ url_for('schedule.index', status='atrasada') }}" class="card card-link card-warning">
+        <span class="card-value">{{ overdue_items }}</span>
+        <span class="card-label">Etapas Atrasadas</span>
+    </a>
+    {% else %}
     <div class="card card-warning">
         <span class="card-value">{{ overdue_items }}</span>
         <span class="card-label">Etapas Atrasadas</span>
     </div>
+    {% endif %}
+
+    {% if low_participation|length > 0 %}
+    <a href="#baixa-participacao" class="card card-link card-warning">
+        <span class="card-value">{{ low_participation|length }}</span>
+        <span class="card-label">Baixa Participação</span>
+    </a>
+    {% elif can('reports.view') %}
+    <a href="{{ url_for('reports.participation') }}" class="card card-link card-warning">
+        <span class="card-value">{{ low_participation|length }}</span>
+        <span class="card-label">Baixa Participação</span>
+    </a>
+    {% else %}
     <div class="card card-warning">
         <span class="card-value">{{ low_participation|length }}</span>
         <span class="card-label">Baixa Participação</span>
     </div>
+    {% endif %}
 </div>
 
 {% if low_participation %}
-<section class="section">
+<section class="section" id="baixa-participacao">
     <h3>Estudantes com baixa participação</h3>
     <ul>
         {% for item in low_participation %}
@@ -41,24 +94,62 @@
 {% endif %}
 
 <div class="grid-2">
-    <section class="section">
-        <h3>Atividades recentes</h3>
+    <section class="section section--activities">
+        <div class="section-head">
+            <h3><span class="section-icon section-icon--activities" aria-hidden="true"></span>Atividades recentes</h3>
+            {% if can('activities.view') %}
+            <a href="{{ url_for('activities.index') }}" class="section-link">Ver todas</a>
+            {% endif %}
+        </div>
         {% if recent_activities %}
-        <ul class="list-simple">
+        <ul class="feed-list feed-list--activities">
             {% for a in recent_activities %}
-            <li>{{ a.activity_date.strftime('%d/%m/%Y') }} — {{ a.student.name }}: {{ a.description[:60] }}...</li>
+            <li class="feed-item">
+                <a href="{{ url_for('activities.view', activity_id=a.id) }}" class="feed-link">
+                    <time class="feed-date" datetime="{{ a.activity_date.isoformat() }}">
+                        <span class="feed-date-day">{{ a.activity_date.strftime('%d') }}</span>
+                        <span class="feed-date-month">{{ a.activity_date.strftime('%m/%y') }}</span>
+                    </time>
+                    <div class="feed-body">
+                        <span class="feed-title">{{ a.description[:70] }}{% if a.description|length > 70 %}…{% endif %}</span>
+                        <span class="feed-meta">{{ a.student.name }} · {{ a.group.name }}</span>
+                    </div>
+                    <span class="feed-action" aria-hidden="true">Ver</span>
+                </a>
+            </li>
             {% endfor %}
         </ul>
         {% else %}
         <p class="text-muted">Nenhuma atividade registrada.</p>
         {% endif %}
     </section>
-    <section class="section">
-        <h3>Evidências recentes</h3>
+    <section class="section section--evidence">
+        <div class="section-head">
+            <h3><span class="section-icon section-icon--evidence" aria-hidden="true"></span>Evidências recentes</h3>
+            {% if can('evidence.view') %}
+            <a href="{{ url_for('evidence.timeline') }}" class="section-link">Ver todas</a>
+            {% endif %}
+        </div>
         {% if recent_evidences %}
-        <ul class="list-simple">
+        <ul class="feed-list feed-list--evidence">
             {% for e in recent_evidences %}
-            <li><a href="{{ url_for('evidence.view', evidence_id=e.id) }}">{{ e.created_at.strftime('%d/%m/%Y') }} — {{ e.title }} ({{ e.group.name }})</a></li>
+            <li class="feed-item">
+                <a href="{{ url_for('evidence.view', evidence_id=e.id) }}" class="feed-link">
+                    <time class="feed-date" datetime="{{ e.created_at.isoformat() }}">
+                        <span class="feed-date-day">{{ e.created_at.strftime('%d') }}</span>
+                        <span class="feed-date-month">{{ e.created_at.strftime('%m/%y') }}</span>
+                    </time>
+                    <div class="feed-body">
+                        <span class="feed-title">{{ e.title }}</span>
+                        <span class="feed-meta">
+                            <span class="feed-badge">{{ e.evidence_type|capitalize }}</span>
+                            {{ e.group.name }}
+                            {% if e.student %} · {{ e.student.name }}{% endif %}
+                        </span>
+                    </div>
+                    <span class="feed-action" aria-hidden="true">Ver</span>
+                </a>
+            </li>
             {% endfor %}
         </ul>
         {% else %}

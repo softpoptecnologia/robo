@@ -3,7 +3,11 @@ from datetime import datetime
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+from app.decorators import permission_required
 from app.extensions import db
+from app.filters import filter_context
+from app.pagination import paginate_or_all
+from app.pdf_utils import pdf_or_html
 from app.models import Evidence, EvidenceAttachment, Group, Meeting, Project, ScheduleItem, Student
 from app.utils import (
     can_access_group,
@@ -122,27 +126,55 @@ def _get_form_context(groups, prefill=None):
     }
 
 
+def _evidence_filter_summary():
+    parts = []
+    if request.args.get("project_id"):
+        project = db.session.get(Project, int(request.args["project_id"]))
+        if project:
+            parts.append(f"Projeto: {project.title}")
+    if request.args.get("group_id"):
+        group = db.session.get(Group, int(request.args["group_id"]))
+        if group:
+            parts.append(f"Grupo: {group.name}")
+    if request.args.get("student_id"):
+        student = db.session.get(Student, int(request.args["student_id"]))
+        if student:
+            parts.append(f"Estudante: {student.name}")
+    if request.args.get("evidence_type"):
+        parts.append(f"Tipo: {request.args['evidence_type']}")
+    if request.args.get("date_from"):
+        parts.append(f"De: {request.args['date_from']}")
+    if request.args.get("date_to"):
+        parts.append(f"Até: {request.args['date_to']}")
+    return " · ".join(parts) if parts else "Nenhum filtro aplicado"
+
+
 @evidence_bp.route("/")
 @login_required
+@permission_required("evidence.view")
 def timeline():
-    evidences = _build_query().all()
-    projects = Project.query.order_by(Project.title).all()
-    groups = user_groups(current_user) if not current_user.is_admin else Group.query.all()
-    students = Student.query.filter_by(status="ativo").order_by(Student.name).all()
+    query = _build_query()
+    pagination, evidences = paginate_or_all(query)
+    ctx = filter_context()
+    ctx.update({
+        "evidences": evidences,
+        "pagination": pagination,
+        "evidence_types": Evidence.EVIDENCE_TYPES,
+        "filter_summary": _evidence_filter_summary(),
+        "generated_at": datetime.now(),
+    })
 
-    return render_template(
+    return pdf_or_html(
+        "pdf/evidence_timeline.html",
         "evidence/timeline.html",
-        evidences=evidences,
-        projects=projects,
-        groups=groups,
-        students=students,
-        evidence_types=Evidence.EVIDENCE_TYPES,
-        filters=request.args,
+        "linha-do-tempo.pdf",
+        **ctx,
     )
 
 
 @evidence_bp.route("/project/<int:project_id>")
 @login_required
+@permission_required("evidence.view")
 def project_timeline(project_id):
     project = db.get_or_404(Project, project_id)
     query = Evidence.query.filter_by(project_id=project_id)
@@ -154,6 +186,7 @@ def project_timeline(project_id):
 
 @evidence_bp.route("/group/<int:group_id>")
 @login_required
+@permission_required("evidence.view")
 def group_timeline(group_id):
     from app.models import ActivityLog, Meeting, MeetingMinute
 
@@ -188,6 +221,7 @@ def group_timeline(group_id):
 
 @evidence_bp.route("/new", methods=["GET", "POST"])
 @login_required
+@permission_required("evidence.manage")
 def create():
     groups = user_groups(current_user) if not current_user.is_admin else Group.query.all()
 
@@ -272,10 +306,14 @@ def create():
 
 @evidence_bp.route("/<int:evidence_id>")
 @login_required
+@permission_required("evidence.view")
 def view(evidence_id):
     evidence = db.get_or_404(Evidence, evidence_id)
     require_group_access(current_user, evidence.group_id)
-    can_delete = current_user.is_admin or evidence.student_id == current_user.student_id
+    can_delete = (
+        current_user.has_permission("evidence.manage")
+        or evidence.student_id == current_user.student_id
+    )
     return render_template("evidence/view.html", evidence=evidence, can_delete=can_delete)
 
 
@@ -284,7 +322,11 @@ def view(evidence_id):
 def delete(evidence_id):
     evidence = db.get_or_404(Evidence, evidence_id)
     require_group_access(current_user, evidence.group_id)
-    if not current_user.is_admin and evidence.student_id != current_user.student_id:
+    can_delete = (
+        current_user.has_permission("evidence.manage")
+        or evidence.student_id == current_user.student_id
+    )
+    if not can_delete:
         flash("Sem permissão.", "error")
         return redirect(url_for("evidence.view", evidence_id=evidence_id))
 

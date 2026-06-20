@@ -3,7 +3,9 @@
 {% block content %}
 <div class="page-header">
     <h2>{{ student.name }}</h2>
+    {% if can('students.manage') %}
     <a href="{{ url_for('students.edit', student_id=student.id) }}" class="btn btn-primary">Editar</a>
+    {% endif %}
 </div>
 <div class="section detail-grid">
     <div class="detail-item"><label>E-mail</label><p>{{ student.email }}</p></div>
@@ -16,9 +18,11 @@
             <strong>{{ student.user.username }}</strong>
             — {{ dict(user_roles).get(student.user.role, student.user.role) }}
         </p>
+        {% if can('students.manage') %}
         <form method="POST" action="{{ url_for('students.revoke_access', student_id=student.id) }}" style="margin-top:0.5rem" onsubmit="return confirm('Remover o login deste estudante?')">
             <button type="submit" class="btn btn-sm btn-danger">Remover acesso</button>
         </form>
+        {% endif %}
         {% else %}
         <p class="text-muted">Sem login — edite o estudante para criar acesso.</p>
         {% endif %}

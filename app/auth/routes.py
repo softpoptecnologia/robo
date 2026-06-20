@@ -3,6 +3,8 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 from app.models import User
 
+from app.permissions import landing_url_for
+
 auth_bp = Blueprint("auth", __name__)
 
 # Contas de demonstração — acesso rápido na tela de login
@@ -17,7 +19,7 @@ DEMO_ACCOUNTS = [
     },
     {
         "role": "leader",
-        "label": "Líder de Grupo",
+        "label": "Gerente",
         "description": "Grupo Atlas — Braço Robótico",
         "username": "lider_atlas",
         "password": "123456",
@@ -42,10 +44,17 @@ def _login_user(username, password):
     return None
 
 
+def _redirect_after_login():
+    destination = landing_url_for(current_user)
+    if destination:
+        return redirect(destination)
+    return redirect(url_for("auth.no_access"))
+
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("dashboard.index"))
+        return _redirect_after_login()
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
@@ -57,7 +66,9 @@ def login():
 
         if _login_user(username, password):
             next_page = request.args.get("next")
-            return redirect(next_page or url_for("dashboard.index"))
+            if next_page:
+                return redirect(next_page)
+            return _redirect_after_login()
 
         flash("Usuário ou senha inválidos.", "error")
 
@@ -68,7 +79,7 @@ def login():
 def login_demo(role):
     """Login rápido para demonstração de cada perfil."""
     if current_user.is_authenticated:
-        return redirect(url_for("dashboard.index"))
+        return _redirect_after_login()
 
     account = next((a for a in DEMO_ACCOUNTS if a["role"] == role), None)
     if not account:
@@ -84,7 +95,15 @@ def login_demo(role):
         return redirect(url_for("auth.login"))
 
     flash(f"Entrou como {account['label']} ({account['username']}).", "success")
-    return redirect(url_for("dashboard.index"))
+    return _redirect_after_login()
+
+
+@auth_bp.route("/sem-acesso")
+@login_required
+def no_access():
+    if landing_url_for(current_user):
+        return redirect(landing_url_for(current_user))
+    return render_template("auth/no_access.html")
 
 
 @auth_bp.route("/logout")

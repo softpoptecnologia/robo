@@ -1,34 +1,36 @@
 {% extends "base.html" %}
+{% from "macros/reports.html" import filter_actions %}
 {% block title %}Relatório — Atividades{% endblock %}
 {% block content %}
-<h2>Atividades por Grupo</h2>
-<div class="table-wrap" style="margin-bottom:1.5rem">
-    <table>
-        <thead><tr><th>Grupo</th><th>Total de Atividades</th></tr></thead>
-        <tbody>
-            {% for name, count in by_group %}
-            <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
-            {% else %}
-            <tr><td colspan="2" class="text-muted">Sem dados.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="page-header">
+    <h2>Atividades por Grupo</h2>
 </div>
-<h3>Últimas atividades</h3>
-<div class="table-wrap">
-    <table>
-        <thead><tr><th>Data</th><th>Estudante</th><th>Grupo</th><th>Descrição</th></tr></thead>
-        <tbody>
-            {% for a in recent %}
-            <tr>
-                <td>{{ a.activity_date.strftime('%d/%m/%Y') }}</td>
-                <td>{{ a.student.name }}</td>
-                <td>{{ a.group.name }}</td>
-                <td>{{ a.description[:60] }}...</td>
-            </tr>
+
+<form method="GET" class="filter-bar">
+    <div class="form-group">
+        <label>Grupo</label>
+        <select name="group_id">
+            <option value="">Todos</option>
+            {% for g in groups %}
+            <option value="{{ g.id }}" {% if filters.get('group_id') == g.id|string %}selected{% endif %}>{{ g.name }}</option>
             {% endfor %}
-        </tbody>
-    </table>
-</div>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>De</label>
+        <input type="date" name="date_from" value="{{ filters.get('date_from', '') }}">
+    </div>
+    <div class="form-group">
+        <label>Até</label>
+        <input type="date" name="date_to" value="{{ filters.get('date_to', '') }}">
+    </div>
+    <div class="form-group">
+        <label>Limite</label>
+        <input type="number" name="limit" min="1" max="500" value="{{ filters.get('limit', '20') }}">
+    </div>
+    {{ filter_actions('reports.activities') }}
+</form>
+
+{% include "reports/partials/activities_content.html" %}
 <a href="{{ url_for('reports.index') }}" class="btn btn-outline">Voltar</a>
 {% endblock %}

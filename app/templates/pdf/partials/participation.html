@@ -1,0 +1,44 @@
+{% from "pdf/macros/erp.html" import empty_msg %}
+
+{% if data %}
+<table class="grid">
+    <thead>
+        <tr>
+            <th style="width:4%">#</th>
+            <th style="width:28%">Estudante</th>
+            <th style="width:12%">Turma</th>
+            <th style="width:10%" class="num">Reuniões</th>
+            <th style="width:10%" class="num">Presenças</th>
+            <th style="width:10%" class="num">Faltas</th>
+            <th style="width:10%" class="num">Participação</th>
+            <th style="width:10%" class="num">Atividades</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in data %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td class="center">{{ loop.index }}</td>
+            <td>{{ d.student.name }}</td>
+            <td>{{ d.student.class_name }}</td>
+            <td class="num">{{ d.total_meetings }}</td>
+            <td class="num">{{ d.present }}</td>
+            <td class="num">{{ d.absent }}</td>
+            <td class="num">{{ d.percent }}%</td>
+            <td class="num">{{ d.activities }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3">Total de estudantes</td>
+            <td class="num">{{ data|sum(attribute='total_meetings') }}</td>
+            <td class="num">{{ data|sum(attribute='present') }}</td>
+            <td class="num">{{ data|sum(attribute='absent') }}</td>
+            <td class="num">—</td>
+            <td class="num">{{ data|sum(attribute='activities') }}</td>
+        </tr>
+    </tfoot>
+</table>
+{% else %}
+{{ empty_msg('Nenhum registro encontrado para os parâmetros informados.') }}
+{% endif %}

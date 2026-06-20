@@ -4,6 +4,10 @@ venv/
 .env
 *.db
 uploads/
+arquivos/ieee-template/
+bin/tectonic.exe
+bin/tectonic.zip
+test_main.tex
 .DS_Store
 error.log
 stderr.log

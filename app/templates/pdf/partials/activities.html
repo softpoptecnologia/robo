@@ -1,0 +1,56 @@
+{% from "pdf/macros/erp.html" import section_label, empty_msg %}
+
+{% if by_group %}
+{{ section_label('Resumo por grupo') }}
+<table class="grid">
+    <thead>
+        <tr>
+            <th style="width:8%">#</th>
+            <th style="width:72%">Grupo</th>
+            <th style="width:20%" class="num">Atividades</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for name, count in by_group %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td class="center">{{ loop.index }}</td>
+            <td>{{ name }}</td>
+            <td class="num">{{ count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{{ section_label('Detalhamento de atividades') }}
+
+{% if recent %}
+<table class="grid">
+    <thead>
+        <tr>
+            <th style="width:10%">Data</th>
+            <th style="width:22%">Estudante</th>
+            <th style="width:18%">Grupo</th>
+            <th style="width:50%">Descrição</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in recent %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td>{{ a.activity_date.strftime('%d/%m/%Y') }}</td>
+            <td>{{ a.student.name }}</td>
+            <td>{{ a.group.name }}</td>
+            <td>{{ a.description }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3">Total de linhas</td>
+            <td class="num">{{ recent|length }}</td>
+        </tr>
+    </tfoot>
+</table>
+{% else %}
+{{ empty_msg('Nenhuma atividade encontrada.') }}
+{% endif %}

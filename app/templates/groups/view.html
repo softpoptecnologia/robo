@@ -4,9 +4,11 @@
 <div class="page-header">
     <h2>{{ group.name }}</h2>
     <div class="actions">
+        {% if can('evidence.manage') %}
         <a href="{{ url_for('evidence.create', group_id=group.id) }}" class="btn btn-primary">+ Nova Evidência</a>
+        {% endif %}
         <a href="{{ url_for('evidence.group_timeline', group_id=group.id) }}" class="btn btn-outline">Linha do Tempo</a>
-        {% if current_user.is_admin or current_user.is_leader %}
+        {% if can('groups.manage') %}
         <a href="{{ url_for('groups.edit', group_id=group.id) }}" class="btn btn-outline">Editar</a>
         {% endif %}
     </div>

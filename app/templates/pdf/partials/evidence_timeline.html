@@ -1,0 +1,36 @@
+{% from "pdf/macros/erp.html" import empty_msg %}
+
+{% if evidences %}
+<table class="grid">
+    <thead>
+        <tr>
+            <th style="width:11%">Data/Hora</th>
+            <th style="width:9%">Tipo</th>
+            <th style="width:16%">Grupo</th>
+            <th style="width:16%">Estudante</th>
+            <th style="width:18%">Título</th>
+            <th style="width:30%">Descrição</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in evidences %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td>{{ e.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>{{ e.evidence_type }}</td>
+            <td>{{ e.group.name }}</td>
+            <td>{{ e.student.name }}</td>
+            <td>{{ e.title }}</td>
+            <td>{{ e.description[:150] }}{% if e.description|length > 150 %}...{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="5">Total de registros</td>
+            <td class="num">{{ evidences|length }}</td>
+        </tr>
+    </tfoot>
+</table>
+{% else %}
+{{ empty_msg('Nenhum registro encontrado para os parâmetros informados.') }}
+{% endif %}

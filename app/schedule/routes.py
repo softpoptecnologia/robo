@@ -1,11 +1,20 @@
-from datetime import date
+from datetime import date, datetime
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from app.decorators import role_required
+from app.decorators import permission_required
 from app.extensions import db
+from app.filters import (
+    apply_group_id,
+    apply_group_scope,
+    apply_project_id,
+    apply_status,
+    filter_context,
+)
 from app.models import Group, ScheduleItem, Student
+from app.pagination import paginate_or_all
+from app.pdf_utils import pdf_or_html
 from app.utils import parse_date, user_groups
 
 schedule_bp = Blueprint("schedule", __name__)
@@ -25,21 +34,55 @@ def _update_overdue_status():
         db.session.commit()
 
 
+def _filter_summary():
+    parts = []
+    if request.args.get("project_id"):
+        from app.models import Project
+
+        project = db.session.get(Project, int(request.args["project_id"]))
+        if project:
+            parts.append(f"Projeto: {project.title}")
+    if request.args.get("group_id"):
+        group = db.session.get(Group, int(request.args["group_id"]))
+        if group:
+            parts.append(f"Grupo: {group.name}")
+    if request.args.get("status"):
+        parts.append(f"Status: {request.args['status']}")
+    return " · ".join(parts) if parts else "Nenhum filtro aplicado"
+
+
 @schedule_bp.route("/")
 @login_required
+@permission_required("schedule.view")
 def index():
     _update_overdue_status()
-    if current_user.is_admin:
-        items = ScheduleItem.query.order_by(ScheduleItem.end_date).all()
-    else:
-        group_ids = [g.id for g in user_groups(current_user)]
-        items = ScheduleItem.query.filter(ScheduleItem.group_id.in_(group_ids)).order_by(ScheduleItem.end_date).all()
-    return render_template("schedule/index.html", items=items)
+    query = ScheduleItem.query
+    query = apply_group_scope(query, ScheduleItem.group_id)
+    query = apply_group_id(query, ScheduleItem.group_id)
+    query = apply_project_id(query, ScheduleItem.project_id)
+    query = apply_status(query, ScheduleItem.status)
+    query = query.order_by(ScheduleItem.end_date)
+    pagination, items = paginate_or_all(query)
+
+    ctx = filter_context()
+    ctx.update({
+        "items": items,
+        "pagination": pagination,
+        "statuses": STATUSES,
+        "filter_summary": _filter_summary(),
+        "generated_at": datetime.now(),
+    })
+    return pdf_or_html(
+        "pdf/schedule_list.html",
+        "schedule/index.html",
+        "cronograma.pdf",
+        **ctx,
+    )
 
 
 @schedule_bp.route("/new", methods=["GET", "POST"])
 @login_required
-@role_required("admin", "leader", "participant")
+@permission_required("schedule.manage")
 def create():
     groups = user_groups(current_user) if not current_user.is_admin else Group.query.all()
     students = Student.query.filter_by(status="ativo").order_by(Student.name).all()
@@ -75,7 +118,7 @@ def create():
 
 @schedule_bp.route("/<int:item_id>/edit", methods=["GET", "POST"])
 @login_required
-@role_required("admin", "leader", "participant")
+@permission_required("schedule.manage")
 def edit(item_id):
     item = db.get_or_404(ScheduleItem, item_id)
     groups = user_groups(current_user) if not current_user.is_admin else Group.query.all()
@@ -98,7 +141,7 @@ def edit(item_id):
 
 @schedule_bp.route("/<int:item_id>/delete", methods=["POST"])
 @login_required
-@role_required("admin", "leader")
+@permission_required("schedule.delete")
 def delete(item_id):
     item = db.get_or_404(ScheduleItem, item_id)
     db.session.delete(item)

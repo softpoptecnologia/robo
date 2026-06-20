@@ -1,0 +1,38 @@
+{% from "pdf/macros/erp.html" import empty_msg %}
+
+{% if meetings %}
+<table class="grid">
+    <thead>
+        <tr>
+            <th style="width:4%">#</th>
+            <th style="width:12%">Data</th>
+            <th style="width:8%">Hora</th>
+            <th style="width:22%">Grupo</th>
+            <th style="width:22%">Local</th>
+            <th style="width:12%">Status</th>
+            <th style="width:20%">Pauta</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in meetings %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td class="center">{{ loop.index }}</td>
+            <td>{{ m.meeting_date.strftime('%d/%m/%Y') }}</td>
+            <td>{{ m.meeting_time.strftime('%H:%M') if m.meeting_time else '—' }}</td>
+            <td>{{ m.group.name }}</td>
+            <td>{{ m.location or '—' }}</td>
+            <td>{{ m.status }}</td>
+            <td>{{ m.agenda[:80] if m.agenda else '—' }}{% if m.agenda and m.agenda|length > 80 %}...{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="5">Total de registros</td>
+            <td colspan="2" class="num">{{ meetings|length }}</td>
+        </tr>
+    </tfoot>
+</table>
+{% else %}
+{{ empty_msg('Nenhum registro encontrado para os parâmetros informados.') }}
+{% endif %}

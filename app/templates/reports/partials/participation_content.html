@@ -1,0 +1,19 @@
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Estudante</th><th>Reuniões</th><th>Presenças</th><th>Faltas</th><th>%</th><th>Atividades</th></tr></thead>
+        <tbody>
+            {% for d in data %}
+            <tr>
+                <td>{{ d.student.name }}</td>
+                <td>{{ d.total_meetings }}</td>
+                <td>{{ d.present }}</td>
+                <td>{{ d.absent }}</td>
+                <td>{{ d.percent }}%</td>
+                <td>{{ d.activities }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-muted">Nenhum dado encontrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

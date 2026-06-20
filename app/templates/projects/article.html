@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}Artigo IEEE — {{ project.title }}{% endblock %}
+{% block body_class %} ieee-article-page{% endblock %}
+{% block content %}
+<div class="ieee-toolbar">
+    <div class="ieee-toolbar-inner">
+        <div>
+            <strong>{{ project.title }}</strong>
+            <span class="ieee-toolbar-meta">
+                Artigo IEEEtran — PDF compilado no servidor
+            </span>
+        </div>
+        <div class="actions">
+            {% if article.pdf_available %}
+            <a href="{{ url_for('projects.article', project_id=project.id, format='pdf', download=1) }}" class="btn btn-primary">Baixar PDF</a>
+            {% endif %}
+            <a href="{{ url_for('projects.view', project_id=project.id) }}" class="btn btn-outline">Voltar ao projeto</a>
+        </div>
+    </div>
+</div>
+
+<div class="article-portal">
+    <div class="article-summary">
+        <span><strong>{{ article.authors|length }}</strong> autores</span>
+        <span><strong>{{ article.figure_count }}</strong> figuras</span>
+        <span><strong>{{ article.evidence_count }}</strong> evidências</span>
+        <span><strong>{{ article.references|length }}</strong> referências</span>
+        {% if article.pdf_available %}
+        <span class="article-status article-status--ok">PDF pronto</span>
+        {% else %}
+        <span class="article-status article-status--err">PDF indisponível</span>
+        {% endif %}
+    </div>
+
+    <nav class="article-tabs" aria-label="Visualização do artigo">
+        <button type="button" class="article-tab is-active" data-tab="paper">Artigo IEEE</button>
+        <button type="button" class="article-tab" data-tab="figures">Figuras ({{ article.figure_count }})</button>
+        <button type="button" class="article-tab" data-tab="evidences">Evidências ({{ evidences|length }})</button>
+        <button type="button" class="article-tab" data-tab="latex">LaTeX</button>
+        <button type="button" class="article-tab" data-tab="export">Exportar</button>
+    </nav>
+
+    <div class="article-panel is-active" data-panel="paper">
+        {% if article.pdf_available %}
+        <div class="article-pdf-wrap">
+            <iframe
+                class="article-pdf-frame"
+                src="{{ article.pdf_url }}"
+                title="Artigo IEEE compilado (LaTeX IEEEtran)"
+            ></iframe>
+        </div>
+        {% else %}
+        <div class="article-panel-card article-compile-error">
+            <h3>Não foi possível compilar o PDF LaTeX</h3>
+            {% if not ieee.latex_ready %}
+            <p>Coloque <code>arquivos/IEEE_Conference_Template.zip</code> no servidor e reinicie a aplicação.</p>
+            {% endif %}
+            <pre class="article-compile-log">{{ article.compile_error }}</pre>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="article-panel" data-panel="figures">
+        <div class="article-panel-card">
+            <h3>Figuras do artigo</h3>
+            {% if article.figures %}
+            <div class="article-figures-grid">
+                {% for fig in article.figures %}
+                <figure class="article-figure-card">
+                    <a href="{{ url_for('uploaded_file', filename=fig.file_path) }}" target="_blank">
+                        <img src="{{ url_for('uploaded_file', filename=fig.file_path) }}" alt="{{ fig.caption }}">
+                    </a>
+                    <figcaption>
+                        <strong>Fig. {{ fig.num }}.</strong> {{ fig.caption }}
+                    </figcaption>
+                </figure>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">Nenhuma figura com imagem anexada às evidências.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="article-panel" data-panel="evidences">
+        <div class="article-panel-card">
+            <h3>Evidências compiladas no artigo</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Data</th><th>Título</th><th>Tipo</th><th>Anexos</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {% for ev in evidences %}
+                        <tr>
+                            <td>{{ ev.created_at.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ ev.title }}</td>
+                            <td>{{ ev.evidence_type }}</td>
+                            <td>{{ ev.attachments|length if ev.attachments else (1 if ev.file_path else 0) }}</td>
+                            <td><a href="{{ url_for('evidence.view', evidence_id=ev.id) }}" class="btn btn-sm btn-outline">Ver</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="article-panel" data-panel="latex">
+        <div class="article-panel-card">
+            <div class="article-panel-header">
+                <h3>Código LaTeX gerado (IEEEtran)</h3>
+                <button type="button" class="btn btn-sm btn-outline" id="copy-latex-btn">Copiar</button>
+            </div>
+            <p class="text-muted article-latex-note">
+                Preâmbulo oficial de <code>conference_101719.tex</code>
+                (template IEEE em <code>arquivos/IEEE_Conference_Template.zip</code>).
+                {% if ieee.example_pdf_url %}
+                <a href="{{ ieee.example_pdf_url }}" target="_blank">Ver PDF de exemplo IEEE</a>
+                {% endif %}
+            </p>
+            <pre class="article-latex" id="latex-source">{{ latex_source }}</pre>
+        </div>
+    </div>
+
+    <div class="article-panel" data-panel="export">
+        <div class="article-panel-card article-export-grid">
+            <div class="export-card export-card--primary">
+                <h3>PDF IEEE (LaTeX)</h3>
+                <p>Artigo compilado — idêntico à aba Artigo IEEE.</p>
+                {% if article.pdf_available %}
+                <a href="{{ url_for('projects.article', project_id=project.id, format='pdf', download=1) }}" class="btn btn-primary">Baixar PDF</a>
+                {% else %}
+                <p class="text-muted">Compilação indisponível.</p>
+                {% endif %}
+            </div>
+            <div class="export-card">
+                <h3>LaTeX completo (.zip)</h3>
+                <p><code>main.tex</code> + <code>IEEEtran.cls</code> + figuras.</p>
+                <a href="{{ url_for('projects.article', project_id=project.id, format='zip') }}" class="btn btn-outline">Baixar .zip</a>
+            </div>
+            <div class="export-card">
+                <h3>Apenas main.tex</h3>
+                <p>Arquivo LaTeX sem figuras embutidas.</p>
+                <a href="{{ url_for('projects.article', project_id=project.id, format='tex') }}" class="btn btn-outline">Baixar .tex</a>
+            </div>
+            {% if ieee.docx_ready %}
+            <div class="export-card">
+                <h3>Word IEEE (.docx)</h3>
+                <p>Template <code>conference-template-a4.docx</code> preenchido.</p>
+                <a href="{{ url_for('projects.article', project_id=project.id, format='docx') }}" class="btn btn-outline">Baixar .docx</a>
+            </div>
+            {% endif %}
+            <div class="export-card">
+                <h3>Template IEEE oficial (.zip)</h3>
+                <p>Exemplo completo IEEE (<code>conference_101719.tex</code>).</p>
+                <a href="{{ url_for('ieee_template_zip') }}" class="btn btn-outline">Baixar template</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var tabs = document.querySelectorAll('.article-tab');
+    var panels = document.querySelectorAll('.article-panel');
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            var name = tab.getAttribute('data-tab');
+            tabs.forEach(function (t) { t.classList.toggle('is-active', t === tab); });
+            panels.forEach(function (p) {
+                p.classList.toggle('is-active', p.getAttribute('data-panel') === name);
+            });
+        });
+    });
+    var copyBtn = document.getElementById('copy-latex-btn');
+    var latexEl = document.getElementById('latex-source');
+    if (copyBtn && latexEl) {
+        copyBtn.addEventListener('click', function () {
+            navigator.clipboard.writeText(latexEl.textContent).then(function () {
+                copyBtn.textContent = 'Copiado!';
+                setTimeout(function () { copyBtn.textContent = 'Copiar'; }, 2000);
+            });
+        });
+    }
+})();
+</script>
+{% endblock %}

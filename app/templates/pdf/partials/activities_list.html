@@ -1,0 +1,34 @@
+{% from "pdf/macros/erp.html" import empty_msg %}
+
+{% if activities %}
+<table class="grid">
+    <thead>
+        <tr>
+            <th style="width:4%">#</th>
+            <th style="width:11%">Data</th>
+            <th style="width:22%">Estudante</th>
+            <th style="width:20%">Grupo</th>
+            <th style="width:43%">Descrição</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in activities %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td class="center">{{ loop.index }}</td>
+            <td>{{ a.activity_date.strftime('%d/%m/%Y') }}</td>
+            <td>{{ a.student.name }}</td>
+            <td>{{ a.group.name }}</td>
+            <td>{{ a.description }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="4">Total de registros</td>
+            <td class="num">{{ activities|length }}</td>
+        </tr>
+    </tfoot>
+</table>
+{% else %}
+{{ empty_msg('Nenhum registro encontrado para os parâmetros informados.') }}
+{% endif %}

@@ -1,0 +1,41 @@
+{% from "pdf/macros/erp.html" import empty_msg %}
+
+{% if report %}
+<table class="grid">
+    <thead>
+        <tr>
+            <th style="width:4%">#</th>
+            <th style="width:22%">Grupo</th>
+            <th style="width:24%">Projeto</th>
+            <th style="width:10%" class="num">Etapas</th>
+            <th style="width:10%" class="num">Concl.</th>
+            <th style="width:10%" class="num">Atras.</th>
+            <th style="width:10%" class="num">Progresso</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in report %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td class="center">{{ loop.index }}</td>
+            <td>{{ r.group.name }}</td>
+            <td>{{ r.group.project.title }}</td>
+            <td class="num">{{ r.total_steps }}</td>
+            <td class="num">{{ r.done }}</td>
+            <td class="num">{{ r.overdue }}</td>
+            <td class="num">{{ r.progress }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3">Total de grupos</td>
+            <td class="num">{{ report|sum(attribute='total_steps') }}</td>
+            <td class="num">{{ report|sum(attribute='done') }}</td>
+            <td class="num">{{ report|sum(attribute='overdue') }}</td>
+            <td class="num">—</td>
+        </tr>
+    </tfoot>
+</table>
+{% else %}
+{{ empty_msg('Nenhum registro encontrado para os parâmetros informados.') }}
+{% endif %}

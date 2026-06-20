@@ -1,0 +1,9 @@
+{% for m in minutes %}
+<div class="section">
+    <h3>{{ m.meeting.meeting_date.strftime('%d/%m/%Y') }} — {{ m.meeting.group.name }}</h3>
+    <p>{{ m.summary }}</p>
+    {% if m.decisions %}<p><strong>Decisões:</strong> {{ m.decisions }}</p>{% endif %}
+</div>
+{% else %}
+<p class="text-muted">Nenhuma ata encontrada.</p>
+{% endfor %}

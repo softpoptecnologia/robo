@@ -1,0 +1,112 @@
+{% from "pdf/macros/erp.html" import section_label, empty_msg %}
+
+{{ section_label('Evidências por grupo') }}
+{% if by_group %}
+<table class="grid">
+    <thead><tr><th style="width:8%">#</th><th>Grupo</th><th style="width:20%" class="num">Quantidade</th></tr></thead>
+    <tbody>
+        {% for name, count in by_group %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td class="center">{{ loop.index }}</td>
+            <td>{{ name }}</td>
+            <td class="num">{{ count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+{{ empty_msg('Sem movimentação registrada.') }}
+{% endif %}
+
+{{ section_label('Últimas evidências (' ~ days ~ ' dias de referência)') }}
+{% if recent %}
+<table class="grid">
+    <thead>
+        <tr>
+            <th style="width:12%">Data</th>
+            <th style="width:18%">Grupo</th>
+            <th style="width:12%">Tipo</th>
+            <th style="width:18%">Autor</th>
+            <th style="width:40%">Título / Descrição</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in recent %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td>{{ e.created_at.strftime('%d/%m/%Y') }}</td>
+            <td>{{ e.group.name }}</td>
+            <td>{{ e.evidence_type }}</td>
+            <td>{{ e.student.name }}</td>
+            <td><strong>{{ e.title }}</strong> — {{ e.description[:120] }}{% if e.description|length > 120 %}...{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+{{ empty_msg('Nenhuma evidência recente.') }}
+{% endif %}
+
+{{ section_label('Grupos sem evidências no período') }}
+{% if inactive_groups %}
+<table class="grid">
+    <thead><tr><th style="width:8%">#</th><th>Grupo</th><th>Projeto</th></tr></thead>
+    <tbody>
+        {% for g in inactive_groups %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td class="center">{{ loop.index }}</td>
+            <td>{{ g.name }}</td>
+            <td>{{ g.project.title }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot><tr><td colspan="2">Total</td><td class="num">{{ inactive_groups|length }}</td></tr></tfoot>
+</table>
+{% else %}
+<p class="empty-msg">Todos os grupos possuem evidências no período.</p>
+{% endif %}
+
+{{ section_label('Ranking de contribuições') }}
+{% if top_contributors %}
+<table class="grid">
+    <thead><tr><th style="width:8%">#</th><th>Estudante</th><th style="width:20%" class="num">Evidências</th></tr></thead>
+    <tbody>
+        {% for name, total in top_contributors %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td class="center">{{ loop.index }}</td>
+            <td>{{ name }}</td>
+            <td class="num">{{ total }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+{{ empty_msg('Sem contribuições no período.') }}
+{% endif %}
+
+{{ section_label('Cronograma x evidências') }}
+{% if schedule_vs_evidence %}
+<table class="grid">
+    <thead>
+        <tr>
+            <th style="width:8%">#</th>
+            <th>Etapa</th>
+            <th style="width:20%">Grupo</th>
+            <th style="width:14%">Status</th>
+            <th style="width:12%" class="num">Evidências</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in schedule_vs_evidence %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td class="center">{{ loop.index }}</td>
+            <td>{{ r.item.title }}</td>
+            <td>{{ r.item.group.name }}</td>
+            <td>{{ r.item.status }}</td>
+            <td class="num">{{ r.evidence_count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+{{ empty_msg('Nenhuma etapa encontrada.') }}
+{% endif %}

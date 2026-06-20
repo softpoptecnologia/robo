@@ -1,11 +1,15 @@
 {% extends "base.html" %}
+{% from "macros/layout.html" import page_header %}
+{% from "macros/reports.html" import filter_actions %}
 {% from "macros/attachments.html" import attachment_gallery %}
+{% from "macros/pagination.html" import render_pagination %}
 {% block title %}Linha do Tempo{% endblock %}
 {% block content %}
-<div class="page-header">
-    <h2>Linha do Tempo</h2>
+{% call page_header('Evidências', 'Linha do tempo — fotos, documentos e registros do clube.') %}
+    {% if can('evidence.manage') %}
     <a href="{{ url_for('evidence.create') }}" class="btn btn-primary">+ Nova Evidência</a>
-</div>
+    {% endif %}
+{% endcall %}
 
 <form method="GET" class="filter-bar">
     <div class="form-group">
@@ -52,8 +56,7 @@
         <label>Até</label>
         <input type="date" name="date_to" value="{{ filters.get('date_to', '') }}">
     </div>
-    <button type="submit" class="btn btn-primary">Filtrar</button>
-    <a href="{{ url_for('evidence.timeline') }}" class="btn btn-outline">Limpar</a>
+    {{ filter_actions('evidence.timeline') }}
 </form>
 
 {% if evidences %}
@@ -81,6 +84,7 @@
     </div>
     {% endfor %}
 </div>
+{{ render_pagination(pagination, 'evidence.timeline') }}
 {% else %}
 <p class="text-muted">Nenhuma evidência encontrada. <a href="{{ url_for('evidence.create') }}">Registrar a primeira evidência</a></p>
 {% endif %}

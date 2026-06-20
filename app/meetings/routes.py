@@ -1,9 +1,20 @@
+from datetime import datetime
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from app.decorators import role_required
+from app.decorators import permission_required
 from app.extensions import db
+from app.filters import (
+    apply_date_range,
+    apply_group_id,
+    apply_group_scope,
+    apply_status,
+    filter_context,
+)
 from app.models import Group, Meeting
+from app.pagination import paginate_or_all
+from app.pdf_utils import pdf_or_html
 from app.utils import parse_date, parse_time, user_groups
 
 meetings_bp = Blueprint("meetings", __name__)
@@ -11,20 +22,52 @@ meetings_bp = Blueprint("meetings", __name__)
 STATUSES = ["agendada", "realizada", "cancelada"]
 
 
+def _filter_summary():
+    parts = []
+    if request.args.get("group_id"):
+        group = db.session.get(Group, int(request.args["group_id"]))
+        if group:
+            parts.append(f"Grupo: {group.name}")
+    if request.args.get("status"):
+        parts.append(f"Status: {request.args['status']}")
+    if request.args.get("date_from"):
+        parts.append(f"De: {request.args['date_from']}")
+    if request.args.get("date_to"):
+        parts.append(f"Até: {request.args['date_to']}")
+    return " · ".join(parts) if parts else "Nenhum filtro aplicado"
+
+
 @meetings_bp.route("/")
 @login_required
+@permission_required("meetings.view")
 def index():
-    if current_user.is_admin:
-        meetings = Meeting.query.order_by(Meeting.meeting_date.desc()).all()
-    else:
-        group_ids = [g.id for g in user_groups(current_user)]
-        meetings = Meeting.query.filter(Meeting.group_id.in_(group_ids)).order_by(Meeting.meeting_date.desc()).all()
-    return render_template("meetings/index.html", meetings=meetings)
+    query = Meeting.query
+    query = apply_group_scope(query, Meeting.group_id)
+    query = apply_group_id(query, Meeting.group_id)
+    query = apply_status(query, Meeting.status)
+    query = apply_date_range(query, Meeting.meeting_date)
+    query = query.order_by(Meeting.meeting_date.desc())
+    pagination, meetings = paginate_or_all(query)
+
+    ctx = filter_context()
+    ctx.update({
+        "meetings": meetings,
+        "pagination": pagination,
+        "statuses": STATUSES,
+        "filter_summary": _filter_summary(),
+        "generated_at": datetime.now(),
+    })
+    return pdf_or_html(
+        "pdf/meetings_list.html",
+        "meetings/index.html",
+        "reunioes.pdf",
+        **ctx,
+    )
 
 
 @meetings_bp.route("/new", methods=["GET", "POST"])
 @login_required
-@role_required("admin", "leader")
+@permission_required("meetings.manage")
 def create():
     groups = user_groups(current_user) if not current_user.is_admin else Group.query.all()
 
@@ -56,6 +99,7 @@ def create():
 
 @meetings_bp.route("/<int:meeting_id>")
 @login_required
+@permission_required("meetings.view")
 def view(meeting_id):
     meeting = db.get_or_404(Meeting, meeting_id)
     return render_template("meetings/view.html", meeting=meeting)
@@ -63,7 +107,7 @@ def view(meeting_id):
 
 @meetings_bp.route("/<int:meeting_id>/edit", methods=["GET", "POST"])
 @login_required
-@role_required("admin", "leader")
+@permission_required("meetings.manage")
 def edit(meeting_id):
     meeting = db.get_or_404(Meeting, meeting_id)
     groups = user_groups(current_user) if not current_user.is_admin else Group.query.all()
@@ -83,7 +127,7 @@ def edit(meeting_id):
 
 @meetings_bp.route("/<int:meeting_id>/delete", methods=["POST"])
 @login_required
-@role_required("admin", "leader")
+@permission_required("meetings.manage")
 def delete(meeting_id):
     meeting = db.get_or_404(Meeting, meeting_id)
     db.session.delete(meeting)

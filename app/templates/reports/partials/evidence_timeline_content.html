@@ -1,0 +1,11 @@
+{% for e in evidences %}
+<div class="section">
+    <p class="meta">{{ e.created_at.strftime('%d/%m/%Y %H:%M') }} · {{ e.evidence_type }} · {{ e.group.name }} · {{ e.student.name }}</p>
+    <h3>{{ e.title }}</h3>
+    <p>{{ e.description }}</p>
+    {% if e.observations %}<p class="text-muted"><em>{{ e.observations }}</em></p>{% endif %}
+    {% if e.external_link %}<p>Link: {{ e.external_link }}</p>{% endif %}
+</div>
+{% else %}
+<p class="text-muted">Nenhuma evidência encontrada.</p>
+{% endfor %}

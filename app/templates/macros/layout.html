@@ -1,0 +1,20 @@
+{% macro page_header(title, subtitle='') %}
+<div class="page-header">
+    <div class="page-header-text">
+        <h2>{{ title }}</h2>
+        {% if subtitle %}<p class="page-subtitle">{{ subtitle }}</p>{% endif %}
+    </div>
+    {% if caller %}
+    <div class="page-header-actions">{{ caller() }}</div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro empty_state(message, action_url='', action_label='') %}
+<div class="empty-state">
+    <p>{{ message }}</p>
+    {% if action_url and action_label %}
+    <a href="{{ action_url }}" class="btn btn-primary">{{ action_label }}</a>
+    {% endif %}
+</div>
+{% endmacro %}

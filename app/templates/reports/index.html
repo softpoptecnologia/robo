@@ -1,25 +1,32 @@
 {% extends "base.html" %}
+{% from "macros/layout.html" import page_header %}
 {% block title %}Relatórios{% endblock %}
 {% block content %}
-<h2>Relatórios</h2>
-<div class="cards">
-    <a href="{{ url_for('reports.projects') }}" class="card" style="text-decoration:none;color:inherit">
-        <span class="card-label">Projetos Cadastrados</span>
+{{ page_header('Relatórios', 'Indicadores e exportações para acompanhamento do clube.') }}
+<div class="nav-cards">
+    <a href="{{ url_for('reports.projects') }}" class="nav-card nav-card--blue">
+        <span class="nav-card-title">Projetos</span>
+        <span class="nav-card-desc">Lista e status de todos os projetos</span>
     </a>
-    <a href="{{ url_for('reports.groups') }}" class="card" style="text-decoration:none;color:inherit">
-        <span class="card-label">Progresso dos Grupos</span>
+    <a href="{{ url_for('reports.groups') }}" class="nav-card nav-card--green">
+        <span class="nav-card-title">Grupos</span>
+        <span class="nav-card-desc">Progresso e etapas por equipe</span>
     </a>
-    <a href="{{ url_for('reports.participation') }}" class="card" style="text-decoration:none;color:inherit">
-        <span class="card-label">Participação</span>
+    <a href="{{ url_for('reports.participation') }}" class="nav-card nav-card--orange">
+        <span class="nav-card-title">Participação</span>
+        <span class="nav-card-desc">Presença em reuniões por estudante</span>
     </a>
-    <a href="{{ url_for('reports.activities') }}" class="card" style="text-decoration:none;color:inherit">
-        <span class="card-label">Atividades por Grupo</span>
+    <a href="{{ url_for('reports.activities') }}" class="nav-card nav-card--purple">
+        <span class="nav-card-title">Atividades</span>
+        <span class="nav-card-desc">Registros agrupados por equipe</span>
     </a>
-    <a href="{{ url_for('reports.minutes') }}" class="card" style="text-decoration:none;color:inherit">
-        <span class="card-label">Atas e Decisões</span>
+    <a href="{{ url_for('reports.minutes') }}" class="nav-card nav-card--blue">
+        <span class="nav-card-title">Atas</span>
+        <span class="nav-card-desc">Decisões e encaminhamentos</span>
     </a>
-    <a href="{{ url_for('reports.evolution') }}" class="card" style="text-decoration:none;color:inherit">
-        <span class="card-label">Evolução (Evidências)</span>
+    <a href="{{ url_for('reports.evolution') }}" class="nav-card nav-card--orange">
+        <span class="nav-card-title">Evolução</span>
+        <span class="nav-card-desc">Linha do tempo de evidências</span>
     </a>
 </div>
 {% endblock %}

@@ -1,10 +1,20 @@
-from datetime import date
+from datetime import date, datetime
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+from app.decorators import permission_required
 from app.extensions import db
+from app.filters import (
+    apply_date_range,
+    apply_group_id,
+    apply_group_scope,
+    apply_student_id,
+    filter_context,
+)
 from app.models import ActivityLog, Group, Student
+from app.pagination import paginate_or_all
+from app.pdf_utils import pdf_or_html
 from app.utils import (
     group_member_students,
     parse_date,
@@ -17,19 +27,48 @@ from app.utils import (
 activities_bp = Blueprint("activities", __name__)
 
 
+def _filter_summary():
+    parts = []
+    if request.args.get("group_id"):
+        group = db.session.get(Group, int(request.args["group_id"]))
+        if group:
+            parts.append(f"Grupo: {group.name}")
+    if request.args.get("student_id"):
+        student = db.session.get(Student, int(request.args["student_id"]))
+        if student:
+            parts.append(f"Estudante: {student.name}")
+    if request.args.get("date_from"):
+        parts.append(f"De: {request.args['date_from']}")
+    if request.args.get("date_to"):
+        parts.append(f"Até: {request.args['date_to']}")
+    return " · ".join(parts) if parts else "Nenhum filtro aplicado"
+
+
 @activities_bp.route("/")
 @login_required
+@permission_required("activities.view")
 def index():
-    if current_user.is_admin:
-        activities = ActivityLog.query.order_by(ActivityLog.activity_date.desc()).all()
-    elif current_user.student_id or user_groups(current_user):
-        group_ids = [g.id for g in user_groups(current_user)]
-        activities = ActivityLog.query.filter(
-            ActivityLog.group_id.in_(group_ids)
-        ).order_by(ActivityLog.activity_date.desc()).all()
-    else:
-        activities = []
-    return render_template("activities/index.html", activities=activities)
+    query = ActivityLog.query
+    query = apply_group_scope(query, ActivityLog.group_id)
+    query = apply_group_id(query, ActivityLog.group_id)
+    query = apply_student_id(query, ActivityLog.student_id)
+    query = apply_date_range(query, ActivityLog.activity_date)
+    query = query.order_by(ActivityLog.activity_date.desc())
+    pagination, activities = paginate_or_all(query)
+
+    ctx = filter_context()
+    ctx.update({
+        "activities": activities,
+        "pagination": pagination,
+        "filter_summary": _filter_summary(),
+        "generated_at": datetime.now(),
+    })
+    return pdf_or_html(
+        "pdf/activities_list.html",
+        "activities/index.html",
+        "atividades.pdf",
+        **ctx,
+    )
 
 
 def _form_context(groups):
@@ -39,6 +78,7 @@ def _form_context(groups):
 
 @activities_bp.route("/new", methods=["GET", "POST"])
 @login_required
+@permission_required("activities.manage")
 def create():
     groups = user_groups(current_user) if not current_user.is_admin else Group.query.all()
 
@@ -80,6 +120,7 @@ def create():
 
 @activities_bp.route("/<int:activity_id>")
 @login_required
+@permission_required("activities.view")
 def view(activity_id):
     activity = db.get_or_404(ActivityLog, activity_id)
     require_group_access(current_user, activity.group_id)
@@ -90,7 +131,11 @@ def view(activity_id):
 @login_required
 def delete(activity_id):
     activity = db.get_or_404(ActivityLog, activity_id)
-    if not current_user.is_admin and activity.student_id != current_user.student_id:
+    can_delete = (
+        current_user.has_permission("activities.manage")
+        or activity.student_id == current_user.student_id
+    )
+    if not can_delete:
         flash("Sem permissão.", "error")
         return redirect(url_for("activities.index"))
     db.session.delete(activity)

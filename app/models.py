@@ -44,6 +44,26 @@ class User(UserMixin, db.Model):
     def is_participant(self):
         return self.role == "participant"
 
+    def has_permission(self, code):
+        from app.permissions import user_has_permission
+        return user_has_permission(self, code)
+
+    @property
+    def role_label(self):
+        from app.permissions import get_role_label
+        return get_role_label(self.role)
+
+
+class RoleProfile(db.Model):
+    __tablename__ = "role_profiles"
+
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.String(30), unique=True, nullable=False)
+    name = db.Column(db.String(80), nullable=False)
+    description = db.Column(db.Text)
+    permissions = db.Column(db.JSON, nullable=False, default=list)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -78,9 +98,28 @@ class Project(db.Model):
     start_date = db.Column(db.Date)
     expected_end_date = db.Column(db.Date)
     status = db.Column(db.String(30), default="planejado")
+    research_question = db.Column(db.Text)
+    hypothesis = db.Column(db.Text)
+    keywords = db.Column(db.String(500))
+    methodology = db.Column(db.Text)
+    scientific_relevance = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     groups = db.relationship("Group", back_populates="project", cascade="all, delete-orphan")
+
+    @property
+    def all_members(self):
+        seen = set()
+        members = []
+        for group in self.groups:
+            if group.leader and group.leader.id not in seen:
+                seen.add(group.leader.id)
+                members.append(group.leader)
+            for member in group.members:
+                if member.id not in seen:
+                    seen.add(member.id)
+                    members.append(member)
+        return members
 
 
 class Group(db.Model):

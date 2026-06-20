@@ -30,6 +30,7 @@ def create_app(config_class=Config):
     from app.minutes.routes import minutes_bp
     from app.reports.routes import reports_bp
     from app.evidence.routes import evidence_bp
+    from app.admin.routes import admin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -42,6 +43,19 @@ def create_app(config_class=Config):
     app.register_blueprint(minutes_bp, url_prefix="/minutes")
     app.register_blueprint(reports_bp, url_prefix="/reports")
     app.register_blueprint(evidence_bp, url_prefix="/evidence")
+    app.register_blueprint(admin_bp, url_prefix="/admin")
+
+    @app.template_global()
+    def can(code):
+        from flask_login import current_user
+
+        return current_user.is_authenticated and current_user.has_permission(code)
+
+    @app.context_processor
+    def inject_globals():
+        from datetime import datetime
+
+        return {"current_year": datetime.now().year}
 
     @app.route("/ping")
     def ping():
@@ -53,11 +67,71 @@ def create_app(config_class=Config):
         from flask import send_from_directory
         return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
+    @app.route("/brand/logo")
+    def brand_logo():
+        from flask import send_from_directory
+
+        assets_dir = app.config["BRAND_ASSETS_FOLDER"]
+        logo_file = app.config["BRAND_LOGO_FILE"]
+        logo_path = os.path.join(assets_dir, logo_file)
+        if os.path.isfile(logo_path):
+            return send_from_directory(assets_dir, logo_file, mimetype="image/png")
+        return send_from_directory(
+            os.path.join(app.root_path, "static", "img"),
+            "logo.png",
+            mimetype="image/png",
+        )
+
+    @app.route("/brand/ieee/<path:filename>")
+    @login_required
+    def ieee_brand_file(filename):
+        from flask import abort, send_from_directory
+
+        from app.articles.ieee_latex_assets import ensure_template_dir
+
+        template_dir = ensure_template_dir(app.config["BRAND_ASSETS_FOLDER"])
+        safe_path = os.path.normpath(os.path.join(template_dir, filename))
+        if not safe_path.startswith(os.path.normpath(template_dir)):
+            abort(404)
+        if not os.path.isfile(safe_path):
+            abort(404)
+        return send_from_directory(template_dir, filename)
+
+    @app.route("/brand/ieee-template.zip")
+    @login_required
+    def ieee_template_zip():
+        from flask import abort, send_from_directory
+
+        zip_name = os.path.basename(app.config["IEEE_TEMPLATE_ZIP"])
+        assets_dir = app.config["BRAND_ASSETS_FOLDER"]
+        if not os.path.isfile(os.path.join(assets_dir, zip_name)):
+            abort(404)
+        return send_from_directory(
+            assets_dir,
+            zip_name,
+            as_attachment=True,
+            download_name=zip_name,
+        )
+
+    try:
+        os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+        os.makedirs(app.config["LATEX_CACHE_FOLDER"], exist_ok=True)
+        from app.articles.ieee_latex_assets import ensure_template_dir
+        from app.articles.compile_latex import ensure_reference_pdf
+
+        ensure_template_dir(app.config["BRAND_ASSETS_FOLDER"])
+        ensure_reference_pdf(app.config["BRAND_ASSETS_FOLDER"], app.config["TECTONIC_BIN_DIR"])
+    except OSError:
+        pass
+    except FileNotFoundError as exc:
+        app.logger.warning("Template IEEE LaTeX: %s", exc)
+
     try:
         with app.app_context():
             db.create_all()
             _migrate_db()
             _seed_admin()
+            _seed_role_profiles()
     except Exception as exc:
         app.logger.warning("DB init: %s", exc)
 
@@ -124,6 +198,27 @@ def _migrate_db():
             with db.engine.connect() as conn:
                 conn.execute(text("ALTER TABLE evidences ADD COLUMN meeting_id INTEGER"))
                 conn.commit()
+
+    if "projects" in inspector.get_table_names():
+        cols = {c["name"] for c in inspector.get_columns("projects")}
+        new_cols = {
+            "research_question": "TEXT",
+            "hypothesis": "TEXT",
+            "keywords": "VARCHAR(500)",
+            "methodology": "TEXT",
+            "scientific_relevance": "TEXT",
+        }
+        with db.engine.connect() as conn:
+            for name, col_type in new_cols.items():
+                if name not in cols:
+                    conn.execute(text(f"ALTER TABLE projects ADD COLUMN {name} {col_type}"))
+            conn.commit()
+
+
+def _seed_role_profiles():
+    from app.permissions import seed_role_profiles
+
+    seed_role_profiles()
 
 
 def _seed_admin():

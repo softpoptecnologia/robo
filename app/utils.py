@@ -110,6 +110,25 @@ def user_group_ids(user):
     return [g.id for g in user_groups(user)]
 
 
+def groups_scoped_query(user):
+    """Query de grupos visíveis ao usuário, ordenada por nome."""
+    from app.models import Group
+
+    query = Group.query
+    if user.is_admin:
+        return query.order_by(Group.name)
+    if not user.student_id:
+        return query.filter(False).order_by(Group.name)
+    if user.is_leader:
+        query = query.filter(
+            (Group.leader_id == user.student_id)
+            | Group.members.any(id=user.student_id)
+        )
+    else:
+        query = query.filter(Group.members.any(id=user.student_id))
+    return query.order_by(Group.name)
+
+
 def can_access_group(user, group_id):
     if user.is_admin:
         return True

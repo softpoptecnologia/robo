@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Perfis e Permissões{% endblock %}
+{% block content %}
+<h2>Perfis e Permissões</h2>
+<p class="text-muted" style="margin-bottom:1.25rem">
+    Configure o que cada perfil pode acessar no sistema. Os menus e rotas respeitam estas permissões.
+</p>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Perfil</th><th>Descrição</th><th>Permissões</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+            {% for p in profiles %}
+            <tr>
+                <td><strong>{{ p.name }}</strong><br><span class="text-muted">{{ p.slug }}</span></td>
+                <td>{{ p.description or '—' }}</td>
+                <td>{{ p.permissions|length }} função(ões)</td>
+                <td>
+                    {% if p.slug == 'admin' %}
+                    <span class="text-muted">Acesso total</span>
+                    {% else %}
+                    <a href="{{ url_for('admin.roles_edit', slug=p.slug) }}" class="btn btn-sm btn-outline">Editar</a>
+                    <form method="POST" action="{{ url_for('admin.roles_reset', slug=p.slug) }}" style="display:inline" onsubmit="return confirm('Restaurar padrões de {{ p.name }}?')">
+                        <button type="submit" class="btn btn-sm btn-outline">Restaurar</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

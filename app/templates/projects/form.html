@@ -43,6 +43,29 @@
             <input type="date" id="expected_end_date" name="expected_end_date" value="{{ project.expected_end_date if project else '' }}">
         </div>
     </div>
+    <fieldset class="section" style="border:1px solid var(--border);padding:1rem;border-radius:8px;margin-bottom:1rem">
+        <legend style="font-weight:600;padding:0 0.5rem">Dados para publicação científica</legend>
+        <div class="form-group">
+            <label for="research_question">Problema de pesquisa</label>
+            <textarea id="research_question" name="research_question">{{ project.research_question if project else '' }}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="hypothesis">Hipótese</label>
+            <textarea id="hypothesis" name="hypothesis">{{ project.hypothesis if project else '' }}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="keywords">Palavras-chave (separadas por vírgula)</label>
+            <input type="text" id="keywords" name="keywords" value="{{ project.keywords if project else '' }}">
+        </div>
+        <div class="form-group">
+            <label for="methodology">Metodologia</label>
+            <textarea id="methodology" name="methodology">{{ project.methodology if project else '' }}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="scientific_relevance">Relevância científica</label>
+            <textarea id="scientific_relevance" name="scientific_relevance">{{ project.scientific_relevance if project else '' }}</textarea>
+        </div>
+    </fieldset>
     <div class="actions">
         <button type="submit" class="btn btn-primary">Salvar</button>
         <a href="{{ url_for('projects.index') }}" class="btn btn-outline">Cancelar</a>

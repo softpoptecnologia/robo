@@ -22,7 +22,7 @@ with app.app_context():
         print("  1. Braço Robótico Articulado")
         print("  2. Estufa Inteligente IoT")
         print("  3. Carrinho Seguidor de Linha")
-        print("  4. Estação Meteorológica Escolar")
+        print("  4. Estacao Meteorologica Escolar  (concluido - demo artigo IEEE)")
         print("  5. Robô Sumô Autônomo")
         print("  6. Classificador de Lixo com IA")
         print()

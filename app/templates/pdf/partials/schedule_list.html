@@ -1,0 +1,38 @@
+{% from "pdf/macros/erp.html" import empty_msg %}
+
+{% if items %}
+<table class="grid">
+    <thead>
+        <tr>
+            <th style="width:4%">#</th>
+            <th style="width:24%">Etapa</th>
+            <th style="width:18%">Grupo</th>
+            <th style="width:10%">Início</th>
+            <th style="width:10%">Término</th>
+            <th style="width:18%">Responsável</th>
+            <th style="width:10%">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr{% if loop.index is odd %} class="alt"{% endif %}>
+            <td class="center">{{ loop.index }}</td>
+            <td>{{ item.title }}</td>
+            <td>{{ item.group.name }}</td>
+            <td>{{ item.start_date.strftime('%d/%m/%Y') if item.start_date else '—' }}</td>
+            <td>{{ item.end_date.strftime('%d/%m/%Y') if item.end_date else '—' }}</td>
+            <td>{{ item.responsible.name if item.responsible else '—' }}</td>
+            <td>{{ item.status }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="6">Total de etapas</td>
+            <td class="num">{{ items|length }}</td>
+        </tr>
+    </tfoot>
+</table>
+{% else %}
+{{ empty_msg('Nenhum registro encontrado para os parâmetros informados.') }}
+{% endif %}

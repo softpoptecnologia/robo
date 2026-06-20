@@ -1,0 +1,6 @@
+{% extends "pdf/base.html" %}
+{% block title %}Reuniões{% endblock %}
+{% block report_code %}RPT-REU{% endblock %}
+{% block report_title %}Relatório Analítico de Reuniões{% endblock %}
+{% block report_title_footer %}RPT-REU Reuniões{% endblock %}
+{% block content %}{% include "pdf/partials/meetings_list.html" %}{% endblock %}

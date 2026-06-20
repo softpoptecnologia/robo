@@ -1,0 +1,30 @@
+<div class="table-wrap" style="margin-bottom:1.5rem">
+    <table>
+        <thead><tr><th>Grupo</th><th>Total de Atividades</th></tr></thead>
+        <tbody>
+            {% for name, count in by_group %}
+            <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
+            {% else %}
+            <tr><td colspan="2" class="text-muted">Sem dados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<h3>Últimas atividades</h3>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Data</th><th>Estudante</th><th>Grupo</th><th>Descrição</th></tr></thead>
+        <tbody>
+            {% for a in recent %}
+            <tr>
+                <td>{{ a.activity_date.strftime('%d/%m/%Y') }}</td>
+                <td>{{ a.student.name }}</td>
+                <td>{{ a.group.name }}</td>
+                <td>{{ a.description[:80] }}{% if a.description|length > 80 %}...{% endif %}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-muted">Nenhuma atividade encontrada.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

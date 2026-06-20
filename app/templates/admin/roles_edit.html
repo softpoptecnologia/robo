@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Editar Perfil — {{ profile.name }}{% endblock %}
+{% block content %}
+<h2>Permissões — {{ profile.name }}</h2>
+<p class="text-muted">Marque as funções que o perfil <strong>{{ role_label }}</strong> pode executar.</p>
+<p class="text-muted" style="margin-bottom:1rem">
+    A permissão <strong>Dashboard</strong> é obrigatória e sempre será mantida para evitar bloqueio após o login.
+</p>
+
+<form method="POST" class="form-card">
+    <div class="form-group">
+        <label for="name">Nome do perfil</label>
+        <input type="text" id="name" name="name" value="{{ profile.name }}" required>
+    </div>
+    <div class="form-group">
+        <label for="description">Descrição</label>
+        <textarea id="description" name="description">{{ profile.description or '' }}</textarea>
+    </div>
+
+    {% for module, items in grouped.items() %}
+    <fieldset class="section" style="border:1px solid var(--border);padding:1rem;border-radius:8px;margin-bottom:1rem">
+        <legend style="font-weight:600;padding:0 0.5rem">{{ module_labels.get(module, module) }}</legend>
+        {% for item in items %}
+        <label style="display:block;padding:0.35rem 0">
+            <input type="checkbox" name="permissions" value="{{ item.code }}"
+                {% if item.code in active or item.code in required_permissions %}checked{% endif %}
+                {% if item.code in required_permissions %}disabled{% endif %}>
+            {{ item.label }}{% if item.code in required_permissions %} <span class="text-muted">(obrigatória)</span>{% endif %}
+        </label>
+        {% endfor %}
+    </fieldset>
+    {% endfor %}
+
+    {% for code in required_permissions %}
+    <input type="hidden" name="permissions" value="{{ code }}">
+    {% endfor %}
+
+    <div class="actions">
+        <button type="submit" class="btn btn-primary">Salvar permissões</button>
+        <a href="{{ url_for('admin.roles_index') }}" class="btn btn-outline">Cancelar</a>
+    </div>
+</form>
+
+<form method="POST" action="{{ url_for('admin.roles_reset', slug=profile.slug) }}" class="actions" style="margin-top:0.75rem" onsubmit="return confirm('Restaurar as permissões padrão deste perfil?')">
+    <button type="submit" class="btn btn-outline">Restaurar padrões</button>
+</form>
+{% endblock %}

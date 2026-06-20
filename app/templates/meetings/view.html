@@ -5,11 +5,13 @@
 <div class="page-header">
     <h2>Reunião — {{ meeting.meeting_date.strftime('%d/%m/%Y') }}</h2>
     <div class="actions">
+        {% if can('evidence.manage') %}
         <a href="{{ url_for('evidence.create', group_id=meeting.group_id, meeting_id=meeting.id) }}" class="btn btn-primary">+ Evidência desta Reunião</a>
-        {% if meeting.status != 'realizada' or not meeting.minute %}
+        {% endif %}
+        {% if can('minutes.manage') and (meeting.status != 'realizada' or not meeting.minute) %}
         <a href="{{ url_for('minutes.create', meeting_id=meeting.id) }}" class="btn btn-outline">Registrar Ata</a>
         {% endif %}
-        {% if current_user.is_admin or current_user.is_leader %}
+        {% if can('meetings.manage') %}
         <a href="{{ url_for('meetings.edit', meeting_id=meeting.id) }}" class="btn btn-outline">Editar</a>
         {% endif %}
     </div>

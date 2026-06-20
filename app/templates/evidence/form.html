@@ -24,7 +24,7 @@
     <div class="alert alert-success">Esta evidência será vinculada à reunião selecionada.</div>
     {% endif %}
 
-    {% if current_user.is_admin or current_user.is_leader or not current_user.student_id %}
+    {% if not current_user.student_id %}
     <div class="form-group">
         <label for="student_id">Estudante responsável *</label>
         <select id="student_id" name="student_id" required>
